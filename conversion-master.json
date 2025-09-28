@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-01-01T00:00:00Z",
+  "conversionRules": {
+    "PIECE_TO_BOX": {
+      "default": 12,
+      "products": {
+        "SKU001": 10,
+        "SKU002": 24,
+        "SKU003": 6
+      }
+    },
+    "BOX_TO_PIECE": {
+      "default": 12,
+      "products": {
+        "SKU001": 10,
+        "SKU002": 24,
+        "SKU003": 6
+      }
+    },
+    "BOX_TO_CARTON": {
+      "default": 6,
+      "products": {
+        "SKU001": 4,
+        "SKU002": 8,
+        "SKU003": 12
+      }
+    },
+    "CARTON_TO_BOX": {
+      "default": 6,
+      "products": {
+        "SKU001": 4,
+        "SKU002": 8,
+        "SKU003": 12
+      }
+    },
+    "PIECE_TO_CARTON": {
+      "default": 72,
+      "products": {
+        "SKU001": 40,
+        "SKU002": 192,
+        "SKU003": 72
+      }
+    },
+    "CARTON_TO_PIECE": {
+      "default": 72,
+      "products": {
+        "SKU001": 40,
+        "SKU002": 192,
+        "SKU003": 72
+      }
+    }
+  },
+  "unitHierarchy": ["PIECE", "BOX", "CARTON"],
+  "supportedUnits": ["PIECE", "BOX", "CARTON"]
+}
