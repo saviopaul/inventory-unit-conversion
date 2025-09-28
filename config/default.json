@@ -1,0 +1,32 @@
+{
+  "converter": {
+    "conversionMasterPath": "./conversion-master.json",
+    "dataDirectory": "./data",
+    "logDirectory": "./logs",
+    "enableWebhook": true,
+    "webhookPort": 3000,
+    "enableFileWatcher": true,
+    "logLevel": "info"
+  },
+  "api": {
+    "endpoints": {
+      "health": "/health",
+      "webhook": "/webhook/inventory",
+      "convert": "/convert",
+      "status": "/status"
+    }
+  },
+  "fileWatcher": {
+    "supportedFormats": [".json", ".csv"],
+    "ignorePatterns": ["^\\.", ".*\\.tmp$", ".*\\.bak$"],
+    "watchDelay": 1000
+  },
+  "logging": {
+    "levels": ["debug", "info", "warn", "error"],
+    "fileRotation": {
+      "enabled": true,
+      "maxFiles": 7,
+      "maxSize": "10MB"
+    }
+  }
+}

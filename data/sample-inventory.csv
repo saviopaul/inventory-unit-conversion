@@ -1,0 +1,5 @@
+sku,name,quantity,unit,category
+SKU001,Widget A,240,PIECE,Electronics
+SKU002,Widget B,3,BOX,Hardware
+SKU003,Widget C,1,CARTON,Tools
+SKU005,New Widget,72,PIECE,New Category

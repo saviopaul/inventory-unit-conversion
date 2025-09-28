@@ -1,0 +1,34 @@
+{
+  "source": "outlet-001",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "items": [
+    {
+      "sku": "SKU001",
+      "name": "Widget A",
+      "quantity": 120,
+      "unit": "PIECE",
+      "category": "Electronics"
+    },
+    {
+      "sku": "SKU002", 
+      "name": "Widget B",
+      "quantity": 5,
+      "unit": "BOX",
+      "category": "Hardware"
+    },
+    {
+      "sku": "SKU003",
+      "name": "Widget C", 
+      "quantity": 2,
+      "unit": "CARTON",
+      "category": "Tools"
+    },
+    {
+      "sku": "SKU004",
+      "name": "Unknown Widget",
+      "quantity": 48,
+      "unit": "PIECE",
+      "category": "Misc"
+    }
+  ]
+}

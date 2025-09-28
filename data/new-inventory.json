@@ -1,0 +1,20 @@
+{
+  "source": "outlet-002",
+  "timestamp": "2024-01-15T14:30:00Z",
+  "items": [
+    {
+      "sku": "SKU001",
+      "name": "Widget A",
+      "quantity": 300,
+      "unit": "PIECE",
+      "category": "Electronics"
+    },
+    {
+      "sku": "SKU003", 
+      "name": "Widget C",
+      "quantity": 4,
+      "unit": "CARTON",
+      "category": "Tools"
+    }
+  ]
+}
