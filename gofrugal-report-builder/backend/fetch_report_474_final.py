@@ -41,21 +41,30 @@ async def fetch_report_474():
         logger.info("Submitting login and waiting for redirect...")
         await page.click('button[type="submit"]')
         
-        # Wait for the page to redirect naturally after j_security_check
-        await asyncio.sleep(10)  # Give it time to process and redirect
+        # Wait and let the page redirect
+        try:
+            await page.wait_for_url(lambda url: 'j_security_check' not in url, timeout=15000)
+        except:
+            pass
+        
+        await asyncio.sleep(5)
         
         logger.info(f"After login URL: {page.url}")
         
-        # STEP 2: Wait for dashboard to fully load
-        logger.info("\nSTEP 2: Waiting for dashboard to load...")
+        # Get cookies for debugging
+        cookies = await context.cookies()
+        logger.info(f"Session cookies: {len(cookies)} cookies set")
         
-        # Try to wait for common dashboard elements
+        # STEP 2: Try to navigate to main dashboard first
+        logger.info("\nSTEP 2: Navigating to main dashboard")
+        
         try:
-            # Wait for page to have actual content (not just login page)
-            await page.wait_for_selector('body', timeout=10000)
-            await asyncio.sleep(10)  # Extra time for JavaScript to load tabs
-        except:
-            pass
+            await page.goto("https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do", wait_until='domcontentloaded', timeout=30000)
+            await asyncio.sleep(10)
+            logger.info(f"Dashboard URL: {page.url}")
+            await page.screenshot(path='/app/gofrugal-report-builder/logs/dashboard_main.png', full_page=True)
+        except Exception as e:
+            logger.error(f"Error navigating to dashboard: {e}")
         
         current_url = page.url
         logger.info(f"Current URL: {current_url}")
