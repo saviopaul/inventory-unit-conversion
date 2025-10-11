@@ -73,33 +73,27 @@ async def fetch_report_474():
         # STEP 4: Wait for content to load (it might be in an iframe)
         logger.info("\nSTEP 4: Checking for iframes")
         
-        try:
-            # Try to find and click Reports tab
-            await page.click('text=Reports', timeout=10000)
-            await asyncio.sleep(3)
-            logger.info("✓ Reports tab clicked!")
-            await page.screenshot(path='/app/gofrugal-report-builder/logs/reports_tab_open.png', full_page=True)
-        except:
-            logger.warning("Could not click Reports tab with text selector, trying alternatives...")
-            # Try other selectors
-            try:
-                reports_tab = await page.query_selector('a:has-text("Reports"), button:has-text("Reports")')
-                if reports_tab:
-                    await reports_tab.click()
-                    await asyncio.sleep(3)
-            except:
-                pass
+        # Check if content is in an iframe
+        iframes = await page.query_selector_all('iframe')
+        logger.info(f"Found {len(iframes)} iframes")
         
-        # STEP 4: Navigate to Inventory sub-menu
-        logger.info("\nSTEP 4: Looking for Inventory sub-menu")
-        
-        try:
-            await page.click('text=Inventory', timeout=10000)
-            await asyncio.sleep(3)
-            logger.info("✓ Inventory sub-menu clicked!")
-            await page.screenshot(path='/app/gofrugal-report-builder/logs/inventory_submenu.png', full_page=True)
-        except:
-            logger.warning("Could not click Inventory sub-menu")
+        # If there's an iframe, switch to it
+        if iframes:
+            logger.info("Report might be inside an iframe, checking each one...")
+            for idx, iframe_element in enumerate(iframes):
+                try:
+                    frame = await iframe_element.content_frame()
+                    if frame:
+                        logger.info(f"Checking iframe {idx+1}")
+                        
+                        # Check if this frame has tables
+                        tables_in_frame = await frame.query_selector_all('table')
+                        if tables_in_frame:
+                            logger.info(f"✓ Found {len(tables_in_frame)} tables in iframe {idx+1}!")
+                            page = frame  # Switch to this frame for data extraction
+                            break
+                except Exception as e:
+                    logger.error(f"Error checking iframe {idx+1}: {e}")
         
         # STEP 5: Search for Report 474 or Current Stock
         logger.info("\nSTEP 5: Searching for Report 474 / Current Stock")
