@@ -173,48 +173,66 @@ class GoFrugalPortalScraper:
             await asyncio.sleep(3)
             
             # Take screenshot of main page
-            await self.page.screenshot(path='/app/gofrugal-report-builder/logs/main_page.png')
+            await self.page.screenshot(path='/app/gofrugal-report-builder/logs/main_page.png', full_page=True)
             
-            # Look for Reports menu/section
+            # Save HTML for analysis
+            html_content = await self.page.content()
+            with open('/app/gofrugal-report-builder/logs/main_page.html', 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            logger.info("Saved main page HTML for analysis")
+            
+            # Look for Reports menu/section - try clicking various elements
             reports_selectors = [
+                'text=Reports',
+                'text=Report',
                 'a:has-text("Reports")',
                 'a:has-text("Report")',
                 'button:has-text("Reports")',
-                '[href*="report"]',
+                '[href*="report" i]',
+                '[href*="Report"]',
                 '.menu-item:has-text("Reports")',
+                'li:has-text("Reports")',
             ]
             
-            reports_menu = None
+            reports_clicked = False
             for selector in reports_selectors:
                 try:
-                    reports_menu = await self.page.wait_for_selector(selector, timeout=3000)
-                    if reports_menu:
-                        logger.info(f"Found reports menu with selector: {selector}")
+                    elements = await self.page.query_selector_all(selector)
+                    for elem in elements:
+                        text = await elem.inner_text()
+                        if 'report' in text.lower():
+                            logger.info(f"Found reports element: {text} with selector: {selector}")
+                            await elem.click()
+                            await asyncio.sleep(3)
+                            await self.page.screenshot(path='/app/gofrugal-report-builder/logs/reports_page.png', full_page=True)
+                            reports_clicked = True
+                            break
+                    if reports_clicked:
                         break
-                except:
+                except Exception as e:
                     continue
                     
-            if reports_menu:
-                await reports_menu.click()
-                await asyncio.sleep(3)
-                await self.page.screenshot(path='/app/gofrugal-report-builder/logs/reports_page.png')
-            else:
+            if not reports_clicked:
                 logger.warning("Could not find Reports menu")
             
             # Get all links and buttons on page
-            all_links = await self.page.query_selector_all('a, button')
+            all_links = await self.page.query_selector_all('a')
             
             reports = []
             for link in all_links:
                 try:
                     text = await link.inner_text()
                     href = await link.get_attribute('href') or ''
+                    onclick = await link.get_attribute('onclick') or ''
                     
                     # Look for report-like items
-                    if any(keyword in text.lower() for keyword in ['report', 'stock', 'inventory', 'item', 'master', 'current']):
+                    if (any(keyword in text.lower() for keyword in ['report', 'stock', 'inventory', 'item', 'master', 'current'])
+                        or 'report' in href.lower()
+                        or 'report' in onclick.lower()):
                         reports.append({
                             'text': text.strip(),
                             'href': href,
+                            'onclick': onclick,
                             'type': 'link'
                         })
                 except:
