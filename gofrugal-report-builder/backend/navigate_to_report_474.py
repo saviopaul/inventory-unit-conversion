@@ -21,7 +21,10 @@ async def navigate_to_report_474():
     password = os.getenv('GOFRUGAL_PASSWORD')
     
     playwright = await async_playwright().start()
-    browser = await playwright.chromium.launch(headless=False)  # Visible browser for debugging
+    browser = await playwright.chromium.launch(
+        headless=True,
+        args=['--no-sandbox', '--disable-setuid-sandbox']
+    )
     context = await browser.new_context(viewport={'width': 1920, 'height': 1080})
     page = await context.new_page()
     
