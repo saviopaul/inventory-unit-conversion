@@ -37,17 +37,35 @@ async def fetch_report_474():
         
         await page.fill('input[type="text"]', username)
         await page.fill('input[type="password"]', password)
+        
+        logger.info("Submitting login and waiting for redirect...")
         await page.click('button[type="submit"]')
         
-        await asyncio.sleep(5)
+        # Wait for the page to redirect naturally after j_security_check
+        await asyncio.sleep(10)  # Give it time to process and redirect
+        
         logger.info(f"After login URL: {page.url}")
         
-        # STEP 2: Navigate to main dashboard
-        dashboard_url = "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do"
-        logger.info(f"\nSTEP 2: Navigating to dashboard: {dashboard_url}")
+        # STEP 2: Wait for dashboard to fully load
+        logger.info("\nSTEP 2: Waiting for dashboard to load...")
         
-        await page.goto(dashboard_url, wait_until='networkidle', timeout=30000)
-        await asyncio.sleep(5)
+        # Try to wait for common dashboard elements
+        try:
+            # Wait for page to have actual content (not just login page)
+            await page.wait_for_selector('body', timeout=10000)
+            await asyncio.sleep(10)  # Extra time for JavaScript to load tabs
+        except:
+            pass
+        
+        current_url = page.url
+        logger.info(f"Current URL: {current_url}")
+        
+        # If still on j_security_check or login page, try navigating to mainIndex.do
+        if 'j_security_check' in current_url or 'login' in current_url.lower():
+            logger.info("Still on redirect page, trying mainIndex.do...")
+            dashboard_url = "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do"
+            await page.goto(dashboard_url, wait_until='domcontentloaded', timeout=30000)
+            await asyncio.sleep(10)
         
         await page.screenshot(path='/app/gofrugal-report-builder/logs/dashboard_loaded.png', full_page=True)
         logger.info("✓ Dashboard loaded!")
