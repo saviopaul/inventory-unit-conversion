@@ -23,13 +23,22 @@ def test_selenium_login():
     username = os.getenv('GOFRUGAL_USERNAME')
     password = os.getenv('GOFRUGAL_PASSWORD')
     
-    # Setup Chrome options
+    # Setup Chrome options - make it look like a real browser
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--window-size=1920,1080')
+    
+    # Anti-detection measures
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    
+    # Enable JavaScript
+    chrome_options.add_argument('--enable-javascript')
     
     # Use system chromium-driver
     service = Service('/usr/bin/chromedriver')
