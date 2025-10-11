@@ -257,9 +257,8 @@ async def navigate_to_report_474():
         import traceback
         traceback.print_exc()
     finally:
-        # Keep browser open for manual inspection
-        logger.info("\n⏸️  Browser will stay open for 60 seconds for manual inspection...")
-        await asyncio.sleep(60)
+        # Close browser
+        logger.info("\nClosing browser...")
         await browser.close()
         await playwright.stop()
 
