@@ -1,0 +1,521 @@
+<!DOCTYPE html><html><head><script type="text/javascript" src="assets/js/jquery.min.js"></script>
+
+
+<script type="text/javascript">
+function checkAndLogoutParent(){
+	if(window.self !== window.top){
+		try{
+			parent.hqlogout();
+		}catch(e){
+			
+		}
+	}
+}
+checkAndLogoutParent();
+</script>
+
+
+
+
+	   <meta charset="UTF-8"> <title>GOFRUGAL ServeEasy</title> <meta name="viewport" content="width=device-width,initial-scale=1"> <link href="https://fonts.googleapis.com/css?family=Montserrat&amp;display=swap" rel="stylesheet"> <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans"> <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css"> <script src="assets/js/jquery.min.js"></script> <script src="assets/js/bootstrap.min.js"></script> <style>.body[_ngcontent-lhy-3]{
+	background-size: 100%;
+	background-repeat: no-repeat;
+
+}
+
+*[_ngcontent-lhy-3] {
+	font-family: "Montserrat", sans-serif;
+  }
+
+@media screen and (min-width: 1850px){
+	.login_panel[_ngcontent-lhy-3]{
+	margin-top: 12%; 
+	}
+	.pad_glass[_ngcontent-lhy-3]{
+		padding-right: 0px;
+	}
+	.glass_inner_pad[_ngcontent-lhy-3]{
+		padding-left: 15%; padding-right: 5%;
+	}
+	.g-logo[_ngcontent-lhy-3]{
+		padding-top: 7%;
+	}
+	.login-error[_ngcontent-lhy-3]{
+		margin-top: 1%;
+	}
+	.rcm_style[_ngcontent-lhy-3]{
+		padding-top: 17%; 
+	}
+	.desc_style[_ngcontent-lhy-3]{
+		padding-top: 17%;
+	}
+	.btn_style[_ngcontent-lhy-3]{
+		padding-top: 20%; 
+	}
+	.username_style[_ngcontent-lhy-3]{
+		margin-top: 5%; padding-right: 5px;
+	}
+	.password_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 5px;
+	}
+	.captcha_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 5px;
+	}
+	.forgot_style[_ngcontent-lhy-3]{
+		padding-right: 15%; padding-top: 5px; color:#4288de; font-size: 13px;
+	}
+	.purpose_style[_ngcontent-lhy-3]{
+		margin-top: 0%; padding-right: 5px; padding-top: 8%;
+	}
+	.login_btn_style[_ngcontent-lhy-3]{
+		margin-top: 10%; padding-right: 11%;
+	}
+	.login_btn_purpose_style[_ngcontent-lhy-3]{
+		margin-top: 2%; padding-right:11%;
+	}
+	.glass[_ngcontent-lhy-3]{
+		height: 50vh;
+		background-color: rgba(0,0,0,0.56); 
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+	}
+	.pad_login[_ngcontent-lhy-3]{
+		padding-left: 0px; 
+	}
+
+	.login[_ngcontent-lhy-3]{
+		width:100%;
+		height: 50vh;
+		background-color: rgba(255,255,255,1); 
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
+	.feature_btn[_ngcontent-lhy-3]
+	{
+		background-color: Transparent;
+		width:115px;
+		height: 32px;
+	}
+
+}
+@media screen and (min-width: 993px) and (max-width:1200px){
+	.login_panel[_ngcontent-lhy-3]{
+	margin-top: 10%; 
+}
+	.pad_glass[_ngcontent-lhy-3]{
+		padding-right: 0px;
+	}
+	
+	.g-logo[_ngcontent-lhy-3]{
+		padding-top: 7%;
+		margin-left: -25%;
+	}
+	.login-error[_ngcontent-lhy-3]{
+		margin-top: 4%; font-size: 15px;
+	}
+	.glass_inner_pad[_ngcontent-lhy-3]{
+		padding-left: 15%; padding-right: 5%;
+	}
+	login_inner_pad[_ngcontent-lhy-3]{
+		margin-left: 10%; 
+	}
+	.rcm_style[_ngcontent-lhy-3]{
+		padding-top: 17%;  
+	}
+	.desc_style[_ngcontent-lhy-3]{
+		padding-top: 17%;  
+	}
+	.btn_style[_ngcontent-lhy-3]{
+		padding-top: 20%;  
+	}
+	.username_style[_ngcontent-lhy-3]{
+		margin-top: 5%; padding-right: 5px;
+	}
+	.password_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 5px;
+	}
+	.forgot_style[_ngcontent-lhy-3]{
+		padding-right: 15%; padding-top: 5px; color:#4288de; font-size: 13px;
+	}
+	.purpose_style[_ngcontent-lhy-3]{
+		margin-top: 0%; padding-right: 5px; padding-top: 8%;
+	}
+	.login_btn_style[_ngcontent-lhy-3]{
+		margin-top: 10%; padding-right: 11%;
+	}
+	.login_btn_purpose_style[_ngcontent-lhy-3]{
+		margin-top: 2%; padding-right:11%;
+	}
+	.glass[_ngcontent-lhy-3]{
+		height: 60vh;
+		background-color: rgba(0,0,0,0.56); 
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+	}
+	.pad_login[_ngcontent-lhy-3]{
+		padding-left: 0px; 
+	}
+
+	.login[_ngcontent-lhy-3]{
+		width:100%;
+		height: 60vh;
+		background-color: rgba(255,255,255,1); 
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
+	.feature_btn[_ngcontent-lhy-3]
+	{
+		background-color: Transparent;
+		width:115px;
+		height: 32px;
+	}
+
+}
+
+@media screen and (min-width: 1200px) and (max-width:1849px){
+	.login_panel[_ngcontent-lhy-3]{
+	margin-top: 10%; 
+	}
+	.pad_glass[_ngcontent-lhy-3]{
+		padding-right: 0px;
+	}
+	
+	.g-logo[_ngcontent-lhy-3]{
+		padding-top: 7%;
+	}
+	.login-error[_ngcontent-lhy-3]{
+		margin-top: 4%; font-size: 15px;
+	}
+	.glass_inner_pad[_ngcontent-lhy-3]{
+		padding-left: 15%; padding-right: 5%;
+	}
+	login_inner_pad[_ngcontent-lhy-3]{
+		margin-left: 10%; 
+	}
+	.rcm_style[_ngcontent-lhy-3]{
+		padding-top: 17%;  
+	}
+	.desc_style[_ngcontent-lhy-3]{
+		padding-top: 17%;  
+	}
+	.btn_style[_ngcontent-lhy-3]{
+		padding-top: 20%;  
+	}
+	.username_style[_ngcontent-lhy-3]{
+		margin-top: 5%; padding-right: 5px;
+	}
+	.password_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 5px;
+	}
+	.forgot_style[_ngcontent-lhy-3]{
+		padding-right: 15%; padding-top: 5px; color:#4288de; font-size: 13px;
+	}
+	.purpose_style[_ngcontent-lhy-3]{
+		margin-top: 0%; padding-right: 5px; padding-top: 8%;
+	}
+	.login_btn_style[_ngcontent-lhy-3]{
+		margin-top: 10%; padding-right: 11%;
+	}
+	.login_btn_purpose_style[_ngcontent-lhy-3]{
+		margin-top: 2%; padding-right:11%;
+	}
+	.glass[_ngcontent-lhy-3]{
+		height: 60vh;
+		background-color: rgba(0,0,0,0.56); 
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+	}
+	.pad_login[_ngcontent-lhy-3]{
+		padding-left: 0px; 
+	}
+
+	.login[_ngcontent-lhy-3]{
+		width:100%;
+		height: 60vh;
+		background-color: rgba(255,255,255,1); 
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
+	.feature_btn[_ngcontent-lhy-3]
+	{
+		background-color: Transparent;
+		width:115px;
+		height: 32px;
+	}
+
+}
+
+@media screen and (max-width: 990px) {
+	.login_panel[_ngcontent-lhy-3]{
+	margin-top: 10%; 
+}
+	.glass_inner_pad[_ngcontent-lhy-3]{
+		padding-left: 15%; padding-right: 5%;
+	}
+	.g-logo[_ngcontent-lhy-3]{
+		padding-top: 7%;
+	}
+	.login-error[_ngcontent-lhy-3]{
+		margin-top: 2%; padding-right: 25%;
+	}
+	.rcm_style[_ngcontent-lhy-3]{
+		padding-top: 6%; 
+	}
+	.desc_style[_ngcontent-lhy-3]{
+		padding-top: 10%;
+	}
+	.btn_style[_ngcontent-lhy-3]{
+		padding-top: 5%;
+	}
+	.username_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 15%;
+	}
+	.password_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 15%; 
+	}
+	.forgot_style[_ngcontent-lhy-3]{
+		padding-right: 20%; padding-top: 5px; color:#4288de; font-size: 13px;
+	}
+	.purpose_style[_ngcontent-lhy-3]{
+		margin-top: 1%; padding-right: 15%; padding-top: 5%;
+	}
+	.login_btn_style[_ngcontent-lhy-3]{
+		margin-top: 10%; padding-right:24%; 
+	}
+	.login_btn_purpose_style[_ngcontent-lhy-3]{
+		margin-top: 4%; padding-right:24%;
+	}
+	.glass[_ngcontent-lhy-3]{
+		height: 250px;
+		background-color: rgba(0,0,0,0.56); 
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		padding: 0px !important;
+	}
+	.login[_ngcontent-lhy-3]{
+
+		height: 350px;
+		background-color: rgba(255,255,255,1); 
+		border-bottom-left-radius: 5px;
+		border-bottom-right-radius: 5px;
+		padding-right: 0px !important;
+	}
+	.pad[_ngcontent-lhy-3]{
+		padding-left: 2%;
+		padding-top:2%;
+	}
+	.feature_btn[_ngcontent-lhy-3]
+	{
+	background-color: Transparent;
+	height: 32px;
+	padding-top: 1px;
+	}
+}
+
+
+.group[_ngcontent-lhy-3]{ 
+position:relative; 
+margin-bottom: 25px; 
+margin-left: 0px;
+}
+
+.inputMaterial[_ngcontent-lhy-3]{
+font-size:15px;
+padding:4px 10px 5px 5px;
+display:block;
+width:100%;
+border:none;
+border-bottom:1px solid #757575;
+}
+
+.inputMaterial[_ngcontent-lhy-3]:focus { outline:none;}
+
+
+
+label[_ngcontent-lhy-3] 				 {
+color:#999; 
+font-size:13px;
+font-weight:normal;
+position:absolute;
+pointer-events:none;
+left:5px;
+top:10px;
+transition:0.2s ease all; 
+-moz-transition:0.2s ease all; 
+-webkit-transition:0.2s ease all;
+}
+
+
+.inputMaterial[_ngcontent-lhy-3]:focus    ~ label[_ngcontent-lhy-3], .inputMaterial[_ngcontent-lhy-3]:valid    ~ label[_ngcontent-lhy-3] 		{
+top:-20px;
+font-size:13px;
+color:  #1d73e0
+}
+
+
+.bar[_ngcontent-lhy-3] 	{ position:relative; display:block; width:100%; }
+.bar[_ngcontent-lhy-3]:before, .bar[_ngcontent-lhy-3]:after 	{
+content:'';
+height:2px; 
+width:0;
+bottom:1px; 
+position:absolute;
+background:  #1d73e0; 
+transition:0.2s ease all; 
+-moz-transition:0.2s ease all; 
+-webkit-transition:0.2s ease all;
+}
+.bar[_ngcontent-lhy-3]:before {
+left:50%;
+}
+.bar[_ngcontent-lhy-3]:after {
+right:50%; 
+}
+
+
+.inputMaterial[_ngcontent-lhy-3]:focus    ~ .bar[_ngcontent-lhy-3]:before, .inputMaterial[_ngcontent-lhy-3]:focus    ~ .bar[_ngcontent-lhy-3]:after {
+width:50%;
+}
+
+
+
+.inputMaterial[_ngcontent-lhy-3]:focus    ~ .highlight[_ngcontent-lhy-3] {
+-webkit-animation:inputHighlighter 0.3s ease;
+-moz-animation:inputHighlighter 0.3s ease;
+animation:inputHighlighter 0.3s ease;
+}</style></head> <body style="background-size: cover; background-image: url(&quot;assets/img/bakerysweetshop_bg.jpg&quot;); background-color: rgb(255, 255, 255);"><!--template bindings={}-->
+<!--template bindings={}--><div>
+    <cm _nghost-lhy-3=""><div _ngcontent-lhy-3="">
+  <div _ngcontent-lhy-3="" class="col-md-3 col-sm-2 "></div>
+  <div _ngcontent-lhy-3="" class="login_panel">
+    <div _ngcontent-lhy-3="" class="col-sm-3 pad_glass">
+      <div _ngcontent-lhy-3="" class="glass">
+        <div _ngcontent-lhy-3="" class="glass_inner_pad">
+          <div _ngcontent-lhy-3="" class="row rcm_style">
+            <font _ngcontent-lhy-3="" color="white" style="font-size: 22px;"><i _ngcontent-lhy-3="">Get control, <br _ngcontent-lhy-3="">  freedom &amp; flexibility </i> </font><br _ngcontent-lhy-3="">
+            <font _ngcontent-lhy-3="" color="white" style="border-style: solid; font-size: 22px; border-top: 0px; border-left: 0px; border-right: 0px; padding-bottom: 10px; border-bottom-color: #3479bf; "><i _ngcontent-lhy-3=""> to maximise ROI</i></font>
+          </div>
+          
+          <div _ngcontent-lhy-3="" class="row" style="margin-top: 5rem">
+            <div _ngcontent-lhy-3="" class="btn_style">
+              <button _ngcontent-lhy-3="" class="add_on_btn btn" onclick="window.open('//gofrugal.com','_blank')" style="width: auto; height: 32px; width:30%;">Add-Ons</button>
+              <button _ngcontent-lhy-3="" class="feature_btn btn pad" onclick="window.open('//gofrugal.com','_blank')" style="margin-left: 8%; border-color: white;  color:white; width: auto;">New Features</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div _ngcontent-lhy-3="" class="col-sm-3 pad_login">
+      <div _ngcontent-lhy-3="" class="login" style="padding-left: 10%; ">
+        <div _ngcontent-lhy-3="" class="row g-logo">
+          <!--template bindings={}-->
+          <!--template bindings={}--><!--template bindings={}-->
+              <div _ngcontent-lhy-3="" class="col-md-1"></div>
+              <div _ngcontent-lhy-3="" class="col-md-9"><img _ngcontent-lhy-3="" alt="logo" src="assets/img/gofrugal-serveeasy.svg"></div>
+              <div _ngcontent-lhy-3="" class="col-md-2"></div>
+          
+        </div>
+        <div _ngcontent-lhy-3="" class="row" style="min-height:17%;">
+          <div _ngcontent-lhy-3="" class="col-md-10 login-error" id="loginerror">
+            <p _ngcontent-lhy-3="" style="color:#FF6C60; text-align: center;"></p>
+          </div>
+        </div>
+        <!--template bindings={}--><form _ngcontent-lhy-3="" id="authForm" method="post" name="authForm" novalidate="" action="j_security_check" class="ng-untouched ng-pristine ng-valid">
+          <div _ngcontent-lhy-3="" class="row username_style">
+            <div _ngcontent-lhy-3="" class="col-md-11">
+              <div _ngcontent-lhy-3="" class="group">
+                <input _ngcontent-lhy-3="" autocomplete="off" autofocus="" class="inputMaterial ng-untouched ng-pristine ng-invalid" id="username" maxlength="100" name="j_username" required="" type="text">
+                <span _ngcontent-lhy-3="" class="highlight"></span>
+                <span _ngcontent-lhy-3="" class="bar"></span>
+                <label _ngcontent-lhy-3="">Username</label>
+              </div>
+              <div _ngcontent-lhy-3="" class="col-md-2"></div>
+            </div>
+          </div>
+          <div _ngcontent-lhy-3="" class="row password_style">
+            <div _ngcontent-lhy-3="" class="col-md-11">
+              <div _ngcontent-lhy-3="" class="group" style="margin-bottom: 0px;">
+                <input _ngcontent-lhy-3="" class="inputMaterial ng-untouched ng-pristine ng-invalid" id="password" maxlength="50" name="j_password" required="" type="Password">
+                <span _ngcontent-lhy-3="" class="highlight"></span>
+                <span _ngcontent-lhy-3="" class="bar"></span>
+                <label _ngcontent-lhy-3="">Password</label>
+              </div>
+            </div>
+            <div _ngcontent-lhy-3="" class="col-md-2"></div>
+          </div>
+
+          <!--template bindings={}-->
+          <div _ngcontent-lhy-3="" class="row">
+            <div _ngcontent-lhy-3="" class="pull-right forgot_style"><a _ngcontent-lhy-3="" style="cursor:pointer;">Forgot Password?</a> </div>
+          </div>
+          <div _ngcontent-lhy-3="" class="row">
+            <div _ngcontent-lhy-3="" class="col-md-11">
+              <!--template bindings={}-->
+            </div>
+            <div _ngcontent-lhy-3="" class="col-md-2"></div>
+          </div>
+          <div _ngcontent-lhy-3="" class="row">
+            <div _ngcontent-lhy-3="" class="col-md-11">
+              <!--template bindings={}--><div _ngcontent-lhy-3="" class="row login_btn_style">
+                <button _ngcontent-lhy-3="" class="btn" style="margin-left: 5%;background-color: #1d73e0; color:white; height: 30%; width: 100%" type="submit">Login
+          </button>
+              </div>
+            </div>
+            <div _ngcontent-lhy-3="" class="col-md-2"></div>
+          </div>
+        </form>
+        <!--template bindings={}-->
+      </div>
+      <div _ngcontent-lhy-3="" class="col-md-2"></div>
+    </div>
+  </div>
+</div></cm>
+</div>
+<!--template bindings={}--> 
+	<script type="text/javascript">
+	    $('#loginerror').removeClass('show-error');
+	    $('#loginerror').addClass('hide-error');
+	    $('#loginerror > p').text('');
+    </script>
+	
+		<script type="text/javascript">
+			function processError() {
+				// checking if error is not due to invalid credentials
+				$.ajax({
+					type: 'GET',
+					url: 'rest/hq/productinfo',
+					error: function(xhr, textStatus) {
+						var errorMessage = 'Invalid Username or Password';
+						$('#loginerror').removeClass('hide-error');
+					    $('#loginerror').addClass('show-error');
+					    $('#loginerror > p').text(errorMessage);
+					    sendAlert();
+					},
+					success: function(data, textStatus, xhr) {
+						var errorMessage = 'Invalid Username or Password';
+						$('#loginerror').removeClass('hide-error');
+					    $('#loginerror').addClass('show-error');
+					    $('#loginerror > p').text(errorMessage);
+					    sendAlert();
+					}
+				});
+			}
+			function sendAlert() {
+				var data = {
+					username: sessionStorage.getItem("username") 
+				};
+				$.ajax({
+					type: 'POST',
+					contentType: 'application/json; charset=utf-8',
+					url: 'rest/hq/alerts/failedloginattempt',
+					data: JSON.stringify(data),
+					dataType: 'json'
+				});
+			}
+			processError();
+		</script>
+		<script type="text/javascript">
+			
+    	</script>
+	
+</body></html>
