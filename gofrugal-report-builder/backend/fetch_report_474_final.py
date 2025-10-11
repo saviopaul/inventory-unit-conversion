@@ -73,11 +73,18 @@ async def fetch_report_474():
         logger.info("\nSTEP 3: Navigating directly to Report 474")
         report_474_url = "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D474%26productId%3D2"
         
-        await page.goto(report_474_url, wait_until='domcontentloaded', timeout=30000)
-        await asyncio.sleep(15)  # Wait for report to load completely
+        await page.goto(report_474_url, wait_until='networkidle', timeout=60000)
+        
+        logger.info(f"Waiting for report content to load...")
+        await asyncio.sleep(20)  # Wait for AJAX/JavaScript to load data
         
         logger.info(f"✓ Navigated to Report 474!")
         await page.screenshot(path='/app/gofrugal-report-builder/logs/report_474_loaded.png', full_page=True)
+        
+        # Log page title and URL
+        title = await page.title()
+        logger.info(f"Page title: {title}")
+        logger.info(f"Current URL: {page.url}")
         
         # STEP 4: Wait for content to load (it might be in an iframe)
         logger.info("\nSTEP 4: Checking for iframes")
