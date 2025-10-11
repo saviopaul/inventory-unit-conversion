@@ -175,9 +175,24 @@ async def fetch_report_474():
         # STEP 6: Extract table data
         logger.info("\nSTEP 6: Extracting table data")
         
+        # Try to wait for table to appear
+        try:
+            logger.info("Waiting for table element...")
+            await page.wait_for_selector('table', timeout=30000)
+            logger.info("✓ Table element found!")
+        except:
+            logger.warning("Table element not found after 30 seconds")
+        
         # Check for tables
         tables = await page.query_selector_all('table')
         logger.info(f"Found {len(tables)} tables on page")
+        
+        # Also check for common data grid selectors
+        data_selectors = ['div[role="grid"]', '.ag-grid', '.data-table', '[class*="table"]', '[class*="grid"]']
+        for selector in data_selectors:
+            elements = await page.query_selector_all(selector)
+            if elements:
+                logger.info(f"Found {len(elements)} elements with selector: {selector}")
         
         if tables:
             # Extract from first data table
