@@ -60,18 +60,18 @@ async def fetch_report_474():
         current_url = page.url
         logger.info(f"Current URL: {current_url}")
         
-        # If still on j_security_check or login page, try navigating to mainIndex.do
-        if 'j_security_check' in current_url or 'login' in current_url.lower():
-            logger.info("Still on redirect page, trying mainIndex.do...")
-            dashboard_url = "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do"
-            await page.goto(dashboard_url, wait_until='domcontentloaded', timeout=30000)
-            await asyncio.sleep(10)
+        # STEP 3: Navigate directly to Report 474
+        logger.info("\nSTEP 3: Navigating directly to Report 474")
+        report_474_url = "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D474%26productId%3D2"
         
-        await page.screenshot(path='/app/gofrugal-report-builder/logs/dashboard_loaded.png', full_page=True)
-        logger.info("✓ Dashboard loaded!")
+        await page.goto(report_474_url, wait_until='domcontentloaded', timeout=30000)
+        await asyncio.sleep(15)  # Wait for report to load completely
         
-        # STEP 3: Click on Reports tab
-        logger.info("\nSTEP 3: Clicking on Reports tab")
+        logger.info(f"✓ Navigated to Report 474!")
+        await page.screenshot(path='/app/gofrugal-report-builder/logs/report_474_loaded.png', full_page=True)
+        
+        # STEP 4: Wait for content to load (it might be in an iframe)
+        logger.info("\nSTEP 4: Checking for iframes")
         
         try:
             # Try to find and click Reports tab
