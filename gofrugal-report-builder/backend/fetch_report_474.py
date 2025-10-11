@@ -33,11 +33,46 @@ async def fetch_report_474():
         # Fill credentials
         await page.fill('input[type="text"]', username)
         await page.fill('input[type="password"]', password)
-        await page.click('button[type="submit"]')
         
-        # Wait for navigation after login
+        # Click login and wait for navigation
+        logger.info("Submitting login...")
+        async with page.expect_navigation(timeout=30000):
+            await page.click('button[type="submit"]')
+        
+        logger.info(f"After login URL: {page.url}")
+        
+        # Wait for dashboard to load
         logger.info("Waiting for dashboard to load...")
-        await asyncio.sleep(10)
+        await asyncio.sleep(5)
+        
+        # Check current URL
+        current_url = page.url
+        logger.info(f"Current URL: {current_url}")
+        
+        # If we're still on login page or got redirected, try to navigate to main app
+        if 'login' in current_url.lower() or current_url == url:
+            logger.info("Still on login page, trying to navigate to main app...")
+            # Try common dashboard URLs
+            possible_urls = [
+                f"{url}/dashboard",
+                f"{url}/home",
+                f"{url}/main",
+                f"{url.replace('/RayMedi_HQ/j_security_check', '')}/dashboard",
+                url.replace('/RayMedi_HQ/j_security_check', ''),
+            ]
+            
+            for test_url in possible_urls:
+                try:
+                    logger.info(f"Trying: {test_url}")
+                    await page.goto(test_url, wait_until='networkidle', timeout=15000)
+                    await asyncio.sleep(3)
+                    if 'login' not in page.url.lower():
+                        logger.info(f"✓ Successfully navigated to: {page.url}")
+                        break
+                except:
+                    continue
+        
+        await asyncio.sleep(5)
         
         # Take screenshot of dashboard
         await page.screenshot(path='/app/gofrugal-report-builder/logs/dashboard.png', full_page=True)
