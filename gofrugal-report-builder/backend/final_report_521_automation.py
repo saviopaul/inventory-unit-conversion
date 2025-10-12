@@ -84,20 +84,44 @@ async def fetch_report_521_complete():
             await page.screenshot(path=f'{logs_dir}/final_02_report_page.png')
             print("✅ Report page loaded")
             
-            # Step 3: Wait for iframe
-            print("\n🔧 Step 3: Access report iframe")
-            await asyncio.sleep(3)
+            # Step 3: Wait for iframe to load with content
+            print("\n🔧 Step 3: Wait for report iframe to load")
             
-            frames = page.frames
-            print(f"   Found {len(frames)} frames")
-            
-            # Frame 1 from recording
+            max_waits = 20
             report_frame = None
-            if len(frames) > 1:
-                report_frame = frames[1]
-                print(f"   Using frame 1")
-            else:
-                print("❌ No iframe found")
+            
+            for attempt in range(max_waits):
+                await asyncio.sleep(2)
+                frames = page.frames
+                
+                if attempt == 0:
+                    print(f"   Attempt {attempt+1}: Found {len(frames)} frames")
+                
+                # Check frames for content
+                for i, frame in enumerate(frames):
+                    try:
+                        # Check if frame has the Export as CSV button
+                        export_btn = frame.locator('button:has-text("Export as CSV")')
+                        btn_count = await export_btn.count()
+                        
+                        if btn_count > 0:
+                            report_frame = frame
+                            print(f"✅ Report iframe loaded (frame {i}) after {attempt+1} attempts")
+                            break
+                        
+                        # Also check for other report indicators
+                        if i == 1 and attempt % 5 == 0:  # Print every 5 attempts for frame 1
+                            button_count = await frame.locator('button').count()
+                            print(f"   Attempt {attempt+1}: Frame {i} has {button_count} buttons")
+                    except:
+                        pass
+                
+                if report_frame:
+                    break
+            
+            if not report_frame:
+                print("❌ Report iframe never loaded with content")
+                await page.screenshot(path=f'{logs_dir}/final_error_iframe_timeout.png')
                 return None
             
             # Step 4: Export workflow from recording
