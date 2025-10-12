@@ -208,15 +208,23 @@ class GoFrugalAPIClient:
             "hidedCols": ""
         }
         
+        # Add CSRF token to headers if available
+        export_headers = {
+            'Content-Type': 'application/json',
+            'Referer': f'{self.base_url}/RayMedi_HQ/index.do#/smartreport?reportId=474&productId=2',
+            'Origin': self.base_url
+        }
+        
+        # Add CSRF token headers if available
+        if 'csrfCookie' in self.cookies:
+            export_headers['X-CSRF-TOKEN'] = self.cookies['csrfCookie']
+            export_headers['CSRF-Token'] = self.cookies['csrfCookie']
+        
         response = self.session.post(
             export_url,
             params=params,
             json=payload,
-            headers={
-                'Content-Type': 'application/json',
-                'Referer': f'{self.base_url}/RayMedi_HQ/index.do',
-                'Origin': self.base_url
-            }
+            headers=export_headers
         )
         
         logger.info(f"Export API response: {response.status_code}")
