@@ -89,7 +89,23 @@ def test_selenium_login():
         
         # Wait for navigation
         logger.info("Waiting for post-login redirect...")
-        time.sleep(10)
+        time.sleep(5)
+        
+        # Handle MFA popup - click "Not Now"
+        logger.info("\nSTEP 3.5: Looking for MFA popup and clicking 'Not Now'")
+        try:
+            # Wait for MFA popup to appear
+            not_now_button = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//*[text()='Not Now']"))
+            )
+            logger.info("✓ Found 'Not Now' button in MFA popup")
+            not_now_button.click()
+            logger.info("✓✓✓ Clicked 'Not Now' - dismissing MFA popup")
+            time.sleep(3)
+        except Exception as e:
+            logger.info(f"No MFA popup found (or already dismissed): {e}")
+        
+        time.sleep(5)
         
         logger.info(f"URL after login: {driver.current_url}")
         driver.save_screenshot('/app/gofrugal-report-builder/logs/selenium_after_login.png')
