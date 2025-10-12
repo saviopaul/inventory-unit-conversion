@@ -32,8 +32,8 @@ def parse_gofrugal_csv(filepath):
             columns = df.columns.tolist()
             row_count = len(df)
             
-            # Get sample data (first 2 rows)
-            sample_data = df.head(2).values.tolist()
+            # Get sample data (first 2 rows) - convert to strings to avoid serialization issues
+            sample_data = df.head(2).astype(str).values.tolist()
             
             return {
                 'success': True,
