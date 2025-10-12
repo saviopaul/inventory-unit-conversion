@@ -143,14 +143,44 @@ async def fetch_report_521_complete():
             
             # Step 4b: Click "Yes" confirmation button
             print("   Clicking 'Yes' on confirmation dialog...")
+            
+            # Wait a bit for dialog to fully render
+            await asyncio.sleep(2)
+            
+            yes_clicked = False
+            
+            # Try method 1: Playwright locator
             try:
-                # Look for Yes button in modal dialog
-                yes_btn = report_frame.locator('button:has-text("Yes"), button.btn-primary').first
-                await yes_btn.wait_for(state='visible', timeout=5000)
-                await yes_btn.click()
+                yes_btn = report_frame.locator('button:has-text("Yes")').first
+                if await yes_btn.is_visible(timeout=3000):
+                    await yes_btn.click()
+                    yes_clicked = True
+                    print("✅ Yes button clicked (method 1)")
+            except:
+                pass
+            
+            # Try method 2: JavaScript in frame
+            if not yes_clicked:
+                try:
+                    result = await report_frame.evaluate('''() => {
+                        const buttons = Array.from(document.querySelectorAll('button'));
+                        const yesBtn = buttons.find(btn => btn.textContent.trim() === 'Yes');
+                        if (yesBtn) {
+                            yesBtn.click();
+                            return true;
+                        }
+                        return false;
+                    }''')
+                    if result:
+                        yes_clicked = True
+                        print("✅ Yes button clicked (method 2 - JavaScript)")
+                except:
+                    pass
+            
+            if yes_clicked:
                 await asyncio.sleep(3)
                 await page.screenshot(path=f'{logs_dir}/final_04_after_yes_click.png')
-                print("✅ Yes button clicked - Export queued to Offline Export report")
+                print("   Export queued to Offline Export report")
                 
                 # This is an OFFLINE export - it goes to "Offline Export report"
                 # The report will be available at Offline Export report section
