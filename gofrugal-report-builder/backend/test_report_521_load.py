@@ -243,7 +243,7 @@ async def test_report_521_load():
                 print(f"   The report might be loading slowly or there's no data")
                 
                 # Take screenshot for debugging
-                await page.screenshot(path=f'{logs_dir}/test_load_04_no_data.png', full_page=False)
+                await page.screenshot(path=f'{logs_dir}/test_load_05_no_data.png', full_page=False)
                 
                 return False
             
