@@ -140,25 +140,67 @@ async def main():
             
             # Navigate to the report URL
             await page.goto('https://bbcohq.gofrugal.com/RayMedi_HQ/index.do#/smartreport?reportId=474&productId=2&HQ_DEFA_ROLE_ID=2')
-            logger.info("   ⏳ Waiting for report to load...")
-            await page.wait_for_load_state('networkidle')
-            await asyncio.sleep(5)  # Extra time for Angular to render
+            logger.info("   ⏳ Waiting for Angular app to load...")
+            
+            # Wait longer for Angular to bootstrap and render
+            await asyncio.sleep(10)
             
             await page.screenshot(path='/app/gofrugal-report-builder/logs/step6_report_page.png')
-            logger.info("   ✓ Report page loaded")
+            
+            # Check if we're still on login page (SPA didn't load)
+            page_content = await page.content()
+            if 'login' in page_content.lower() or len(page_content) < 1000:
+                logger.warning("   ⚠️  SPA not loaded, still on login/blank page")
+                logger.info("   Trying to reload...")
+                await page.reload()
+                await asyncio.sleep(10)
+                await page.screenshot(path='/app/gofrugal-report-builder/logs/step6b_after_reload.png')
+            
+            logger.info("   ✓ Page loaded")
             
             # STEP 8: Wait for report data to load
             logger.info("\n👤 Step 8: Waiting for report data...")
-            await asyncio.sleep(5)
             
-            # Look for any loading indicators to disappear
-            try:
-                await page.wait_for_selector('.loading, .spinner, [class*="loading"]', state='hidden', timeout=10000)
-            except:
-                pass
+            # Try to wait for common report elements
+            report_loaded = False
+            wait_attempts = 0
+            max_attempts = 6
+            
+            while not report_loaded and wait_attempts < max_attempts:
+                wait_attempts += 1
+                logger.info(f"   Attempt {wait_attempts}/{max_attempts}: Checking for report elements...")
+                
+                await asyncio.sleep(5)
+                
+                # Check for table, grid, or data elements
+                try:
+                    has_table = await page.evaluate('''() => {
+                        const tables = document.querySelectorAll('table, .grid, .datatable, [role="grid"]');
+                        return tables.length > 0;
+                    }''')
+                    
+                    if has_table:
+                        logger.info("   ✓ Found report table/grid")
+                        report_loaded = True
+                        break
+                except:
+                    pass
+                
+                # Check page size (Angular app should make page much larger)
+                content = await page.content()
+                if len(content) > 50000:  # Substantial content loaded
+                    logger.info(f"   ✓ Page size indicates content loaded ({len(content)} bytes)")
+                    report_loaded = True
+                    break
+                
+                await page.screenshot(path=f'/app/gofrugal-report-builder/logs/step7_wait_{wait_attempts}.png')
             
             await page.screenshot(path='/app/gofrugal-report-builder/logs/step7_report_loaded.png')
-            logger.info("   ✓ Report data loaded")
+            
+            if report_loaded:
+                logger.info("   ✓ Report data appears to be loaded")
+            else:
+                logger.warning("   ⚠️  Could not confirm report loaded, proceeding anyway...")
             
             # STEP 9: Find and click export button
             logger.info("\n👤 Step 9: Looking for Export button...")
