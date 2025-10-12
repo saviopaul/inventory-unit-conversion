@@ -88,13 +88,15 @@ class GoFrugalReportFetcher:
                 
                 # Step 2: Navigate to Reports
                 print("\n📊 Step 3: Navigating to Reports menu...")
-                # Wait for navigation bar to be ready
-                nav_bar = page.locator('nav').first
-                await nav_bar.wait_for(state='visible', timeout=10000)
+                # Wait for menu bar to be fully loaded
+                await asyncio.sleep(2)
                 
-                # Find and click Reports menu
-                reports_menu = page.locator('nav a:has-text("Reports")').first
-                await reports_menu.wait_for(state='visible', timeout=10000)
+                # Find Reports menu using class selector (from Puppeteer recording)
+                # The menu structure uses dropdown-submenu class
+                reports_menu = page.locator('li.dropdown-submenu a.ng-binding:has-text("Reports")').first
+                await reports_menu.wait_for(state='visible', timeout=15000)
+                await reports_menu.hover()
+                await asyncio.sleep(1)
                 await reports_menu.click()
                 await asyncio.sleep(2)
                 print("✅ Reports menu clicked")
