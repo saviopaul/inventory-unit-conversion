@@ -40,9 +40,6 @@ def test_selenium_login():
     # Enable JavaScript
     chrome_options.add_argument('--enable-javascript')
     
-    # Use system chromium-driver
-    service = Service('/usr/bin/chromedriver')
-    
     logger.info("="*80)
     logger.info("TESTING WITH SELENIUM")
     logger.info("="*80)
@@ -51,7 +48,7 @@ def test_selenium_login():
     try:
         # Initialize driver
         logger.info("\nInitializing Chrome driver...")
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)
         
         logger.info("✓ Chrome driver initialized")
