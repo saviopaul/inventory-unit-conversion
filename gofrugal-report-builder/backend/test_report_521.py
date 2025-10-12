@@ -78,21 +78,42 @@ async def fetch_report_521():
             for attempt in range(max_waits):
                 await asyncio.sleep(2)
                 frames = page.frames
-                print(f"   Attempt {attempt+1}: Found {len(frames)} frames")
+                
+                if attempt == 0:
+                    print(f"   Attempt {attempt+1}: Found {len(frames)} frames")
                 
                 for i, frame in enumerate(frames):
                     frame_url = frame.url
                     if 'smartreport' in frame_url or 'reportsclient' in frame_url:
-                        print(f"   Checking frame {i}: {frame_url[:80]}")
+                        if attempt == 0:
+                            print(f"   Checking frame {i}: {frame_url[:80]}")
                         
+                        # Try multiple selectors to find the report content
                         try:
-                            apply_btn = frame.locator('button:has-text("Apply")')
-                            if await apply_btn.count() > 0:
+                            # Check for various elements that indicate the report is loaded
+                            has_content = False
+                            
+                            # Check for buttons
+                            button_count = await frame.locator('button').count()
+                            if button_count > 0:
+                                has_content = True
+                                if attempt % 3 == 0:  # Print every 3 attempts
+                                    print(f"   Attempt {attempt+1}: Frame {i} has {button_count} buttons")
+                            
+                            # Check for main content div
+                            main_content = await frame.locator('#filtersPanel, .filter-panel, .main-content, sr-sidebar').count()
+                            if main_content > 0:
+                                has_content = True
+                                if attempt % 3 == 0:
+                                    print(f"   Attempt {attempt+1}: Frame {i} has main content elements")
+                            
+                            if has_content:
                                 report_frame = frame
-                                print(f"✅ Report iframe loaded")
+                                print(f"✅ Report iframe loaded (frame {i}) after {attempt+1} attempts")
                                 break
-                        except:
-                            pass
+                        except Exception as e:
+                            if attempt == 0:
+                                print(f"   Error checking frame {i}: {str(e)[:50]}")
                 
                 if report_frame:
                     break
