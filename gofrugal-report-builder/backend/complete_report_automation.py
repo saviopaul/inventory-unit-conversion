@@ -156,7 +156,7 @@ class GoFrugalReportFetcher:
                     return None
                 
                 # Step 4: Apply filters
-                print("\n🔍 Step 6: Applying filters...")
+                print("\n🔍 Step 5: Applying filters...")
                 await asyncio.sleep(1)
                 
                 # Click Apply button first time
