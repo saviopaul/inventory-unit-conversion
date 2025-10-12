@@ -54,12 +54,23 @@ async def scrape_all_report_schemas():
             print("\n📊 Step 2: Discovering all reports from menu...")
             
             # Click on Reports menu to expand it
-            await page.evaluate('''() => {
+            print("   Clicking Reports menu...")
+            clicked = await page.evaluate('''() => {
                 const links = Array.from(document.querySelectorAll('a'));
                 const reportsLink = links.find(link => link.textContent.trim() === 'Reports');
-                if (reportsLink) reportsLink.click();
+                if (reportsLink) {
+                    reportsLink.click();
+                    return true;
+                }
+                return false;
             }''')
-            await asyncio.sleep(2)
+            
+            if not clicked:
+                print("   ❌ Could not find Reports menu")
+                return None
+            
+            print("   ✅ Reports menu clicked, waiting for submenu to load...")
+            await asyncio.sleep(5)  # Give more time for menu to expand
             
             # Get all report links from the navigation
             # Reports are typically in format: <a href="mainIndex.do?page=...reportId=XXX...">Report Name</a>
