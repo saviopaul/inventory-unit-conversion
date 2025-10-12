@@ -27,9 +27,9 @@ async def main():
     logger.info("="*80)
     
     async with async_playwright() as p:
-        # Launch browser in visible mode for debugging
+        # Launch browser (headless in server environment, with slow_mo for human-like behavior)
         browser = await p.chromium.launch(
-            headless=False,  # Keep visible to see what's happening
+            headless=True,  # Must be headless in server environment
             slow_mo=500  # Slow down actions to be more human-like
         )
         
