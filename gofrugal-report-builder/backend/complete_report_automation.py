@@ -78,16 +78,25 @@ class GoFrugalReportFetcher:
                 # Click login
                 print("🔐 Logging in...")
                 await page.click('button:has-text("Login")')
+                
+                # Wait for navigation to complete
+                print("⏳ Waiting for dashboard to load...")
+                await page.wait_for_load_state('networkidle', timeout=30000)
                 await asyncio.sleep(5)
                 await page.screenshot(path=f'{self.logs_dir}/auto_02_after_login.png')
                 print("✅ Logged in successfully")
                 
                 # Step 2: Navigate to Reports
                 print("\n📊 Step 3: Navigating to Reports menu...")
-                reports_menu = page.locator('a:has-text("Reports")').first
+                # Wait for navigation bar to be ready
+                nav_bar = page.locator('nav').first
+                await nav_bar.wait_for(state='visible', timeout=10000)
+                
+                # Find and click Reports menu
+                reports_menu = page.locator('nav a:has-text("Reports")').first
                 await reports_menu.wait_for(state='visible', timeout=10000)
                 await reports_menu.click()
-                await asyncio.sleep(1)
+                await asyncio.sleep(2)
                 print("✅ Reports menu clicked")
                 
                 # Navigate to Inventory -> Current Stock -> Current Stock - Item Wise Detail
