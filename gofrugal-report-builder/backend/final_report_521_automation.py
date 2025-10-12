@@ -144,14 +144,35 @@ async def fetch_report_521_complete():
             # Step 4b: Click "Yes" confirmation button
             print("   Clicking 'Yes' on confirmation dialog...")
             try:
-                yes_btn = report_frame.locator('button.btn-primary:has-text("Yes")').first
+                # Look for Yes button in modal dialog
+                yes_btn = report_frame.locator('button:has-text("Yes"), button.btn-primary').first
                 await yes_btn.wait_for(state='visible', timeout=5000)
                 await yes_btn.click()
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
                 await page.screenshot(path=f'{logs_dir}/final_04_after_yes_click.png')
-                print("✅ Yes button clicked")
+                print("✅ Yes button clicked - Export queued to Offline Export report")
+                
+                # This is an OFFLINE export - it goes to "Offline Export report"
+                # The report will be available at Offline Export report section
+                print("\n⚠️  IMPORTANT: This is an OFFLINE EXPORT")
+                print("   The report will be available in 'Offline Export report' section")
+                print("   We need to navigate there to download it")
+                
+                # Wait for export to be queued
+                await asyncio.sleep(5)
+                
+                # For now, return success as export was queued
+                print("\n✅ Export successfully queued!")
+                print("   To download: Navigate to 'Offline Export report' section manually")
+                print("   Or we can automate navigation to that section")
+                
+                # Return a special status indicating offline export
+                return "OFFLINE_EXPORT_QUEUED"
+                
             except Exception as e:
-                print(f"⚠️ Yes button not found or already dismissed: {str(e)[:50]}")
+                print(f"❌ Yes button click failed: {str(e)[:50]}")
+                await page.screenshot(path=f'{logs_dir}/final_error_yes_click.png')
+                return None
             
             # Step 4c: Open main filters (optional from recording)
             print("   Opening filters panel...")
