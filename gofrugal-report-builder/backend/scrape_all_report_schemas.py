@@ -95,12 +95,18 @@ async def scrape_all_report_schemas():
             
             # ===== STEP 3: EXTRACT SCHEMA FROM EACH REPORT =====
             print(f"\n📋 Step 3: Extracting schemas from all reports...")
-            print(f"   This will take a while (~{len(report_links) * 15} seconds)...\n")
+            
+            # Option to limit reports for testing (set to None for all reports)
+            max_reports = int(os.environ.get('MAX_REPORTS', len(report_links)))
+            reports_to_process = report_links[:max_reports]
+            
+            print(f"   Processing {len(reports_to_process)} reports...")
+            print(f"   Estimated time: ~{len(reports_to_process) * 15} seconds\n")
             
             successful_extractions = 0
             failed_extractions = 0
             
-            for idx, report_info in enumerate(report_links, 1):
+            for idx, report_info in enumerate(reports_to_process, 1):
                 report_id = report_info['reportId']
                 report_name = report_info['name']
                 report_href = report_info['href']
