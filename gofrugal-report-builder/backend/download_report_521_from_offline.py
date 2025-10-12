@@ -160,11 +160,35 @@ async def download_report_521_from_offline():
                     download_url = base_url + download_path
                     print(f"   Full download URL: {download_url}")
                     
-                    # Set up download listener and navigate to the URL
-                    async with page.expect_download(timeout=30000) as download_info:
-                        await page.goto(download_url)
-                    
-                    download = await download_info.value
+                    # Method 1: Try handling new page/popup
+                    print("   Method 1: Trying popup handler...")
+                    try:
+                        # Listen for new pages (popups)
+                        async with context.expect_page(timeout=5000) as new_page_info:
+                            await report_521_link.click()
+                        
+                        new_page = await new_page_info.value
+                        print(f"   ✅ Popup opened: {new_page.url[:80]}")
+                        
+                        # Wait for download from the new page
+                        async with new_page.expect_download(timeout=30000) as download_info:
+                            await asyncio.sleep(1)  # Give it time to start
+                        
+                        download = await download_info.value
+                        await new_page.close()
+                        
+                    except asyncio.TimeoutError:
+                        print("   Method 1 failed (no popup), trying Method 2...")
+                        
+                        # Method 2: Direct download using requests-like approach
+                        # Create a new page and navigate directly
+                        download_page = await context.new_page()
+                        
+                        async with download_page.expect_download(timeout=30000) as download_info:
+                            await download_page.goto(download_url)
+                        
+                        download = await download_info.value
+                        await download_page.close()
                 else:
                     print("   ❌ Could not parse download URL from onclick")
                     return None
