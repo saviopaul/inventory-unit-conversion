@@ -98,7 +98,8 @@ class GoFrugalReportFetcher:
                 
                 # Step 3: Wait for report to load in iframe
                 print("\n🔧 Step 4: Waiting for report iframe to load...")
-                await asyncio.sleep(5)
+                # Wait longer for Angular to load the report
+                await asyncio.sleep(10)
                 await page.screenshot(path=f'{self.logs_dir}/auto_03b_waiting_iframe.png')
                 
                 # Get all frames
