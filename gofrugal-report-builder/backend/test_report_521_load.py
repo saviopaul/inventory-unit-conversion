@@ -207,7 +207,7 @@ async def test_report_521_load():
                     print(f"      {i}. {col}")
                 
                 # Take final screenshot
-                await page.screenshot(path=f'{logs_dir}/test_load_04_data_loaded.png', full_page=False)
+                await page.screenshot(path=f'{logs_dir}/test_load_05_data_loaded.png', full_page=False)
                 
                 # Get sample data from first row
                 print(f"\n   📄 Sample Data (first row):")
