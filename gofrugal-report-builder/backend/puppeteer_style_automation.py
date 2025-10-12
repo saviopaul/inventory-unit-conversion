@@ -169,20 +169,94 @@ async def fetch_report_474_puppeteer_style():
             
             # Step 9: Export
             print("\n💾 Step 9: Export report")
+            await asyncio.sleep(3)
+            await page.screenshot(path=f'{logs_dir}/pup_05_before_export.png')
             
-            # Click export icon (#export i)
-            export_icon = report_frame.locator('#export i').first
-            if await export_icon.is_visible(timeout=5000):
-                await export_icon.click()
-                await asyncio.sleep(2)
-                print("✅ Export menu opened")
+            # Try different selectors for the export element
+            export_found = False
+            
+            # Try 1: #export i (from recording)
+            try:
+                export_icon = report_frame.locator('#export i').first
+                if await export_icon.is_visible(timeout=3000):
+                    await export_icon.click()
+                    export_found = True
+                    print("✅ Export icon clicked (method 1)")
+            except:
+                pass
+            
+            # Try 2: Look for "Export as CSV" button directly
+            if not export_found:
+                try:
+                    export_csv = report_frame.locator('button:has-text("Export as CSV")').first
+                    if await export_csv.is_visible(timeout=3000):
+                        await export_csv.click()
+                        export_found = True
+                        print("✅ Export CSV button clicked (method 2)")
+                except:
+                    pass
+            
+            # Try 3: Use JavaScript to find export elements
+            if not export_found:
+                try:
+                    result = await report_frame.evaluate('''() => {
+                        // Look for export-related elements
+                        const exportButton = document.querySelector('[id*="export"]') || 
+                                           document.querySelector('[class*="export"]') ||
+                                           Array.from(document.querySelectorAll('button')).find(btn => 
+                                               btn.textContent.includes('Export') || 
+                                               btn.textContent.includes('CSV')
+                                           );
+                        if (exportButton) {
+                            exportButton.click();
+                            return {success: true, text: exportButton.textContent || exportButton.id};
+                        }
+                        return {success: false};
+                    }''')
+                    if result.get('success'):
+                        export_found = True
+                        print(f"✅ Export element clicked (method 3): {result.get('text', 'unknown')}")
+                except:
+                    pass
+            
+            if not export_found:
+                print("❌ Could not find export button")
+                await page.screenshot(path=f'{logs_dir}/pup_error_no_export.png')
                 
-                # Click export button (from recording: sr-sidebar div:nth-of-type(2) button)
-                print("⏳ Initiating download...")
+                # Debug: List all buttons in the frame
+                try:
+                    buttons = await report_frame.evaluate('''() => {
+                        return Array.from(document.querySelectorAll('button')).map(btn => btn.textContent.trim());
+                    }''')
+                    print(f"   Available buttons in frame: {buttons}")
+                except:
+                    pass
                 
-                async with page.expect_download() as download_info:
-                    export_btn = report_frame.locator('sr-sidebar div:nth-of-type(2) button').first
-                    await export_btn.click()
+                return None
+            
+            # Wait for export menu/dialog
+            await asyncio.sleep(2)
+            await page.screenshot(path=f'{logs_dir}/pup_06_export_menu.png')
+            
+            # Now click the actual export/download button
+            print("⏳ Initiating download...")
+            
+            try:
+                async with page.expect_download(timeout=10000) as download_info:
+                    # Try the recording selector first
+                    try:
+                        export_btn = report_frame.locator('sr-sidebar div:nth-of-type(2) button').first
+                        await export_btn.click()
+                    except:
+                        # Try alternate: any button with download/export text
+                        buttons = report_frame.locator('button')
+                        button_count = await buttons.count()
+                        for i in range(button_count):
+                            btn_text = await buttons.nth(i).text_content()
+                            if 'download' in btn_text.lower() or 'export' in btn_text.lower() or 'csv' in btn_text.lower():
+                                await buttons.nth(i).click()
+                                break
+                    
                     await asyncio.sleep(2)
                 
                 download = await download_info.value
@@ -201,9 +275,10 @@ async def fetch_report_474_puppeteer_style():
                 else:
                     print("❌ File not found after download")
                     return None
-            else:
-                print("❌ Export icon not found")
-                await page.screenshot(path=f'{logs_dir}/pup_error_no_export.png')
+                    
+            except Exception as e:
+                print(f"❌ Download failed: {str(e)}")
+                await page.screenshot(path=f'{logs_dir}/pup_error_download_failed.png')
                 return None
                 
         except Exception as e:
