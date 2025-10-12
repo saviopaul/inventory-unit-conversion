@@ -297,10 +297,10 @@ async def fetch_report_521_with_download():
             print("   Looking for Report 521 export files...")
             
             try:
-                # Look for links in table cells (td a or tbody a)
-                download_links = offline_frame.locator('tbody a, td a')
+                # Look for links in table body specifically
+                download_links = offline_frame.locator('tbody a')
                 link_count = await download_links.count()
-                print(f"   Found {link_count} download links in table")
+                print(f"   Found {link_count} download links in table body")
                 
                 if link_count > 0:
                     # Get all link texts to find Report 521
@@ -313,8 +313,8 @@ async def fetch_report_521_with_download():
                             link = download_links.nth(i)
                             link_text = await link.inner_text()
                             
-                            # Look for files starting with "521"
-                            if link_text.startswith('521'):
+                            # Look for files starting with "521" and containing ".zip"
+                            if link_text.startswith('521') and '.zip' in link_text:
                                 report_521_link = link
                                 report_521_index = i
                                 print(f"   ✅ Found Report 521: {link_text}")
