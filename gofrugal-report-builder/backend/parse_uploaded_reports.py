@@ -102,9 +102,13 @@ def parse_gofrugal_xls(filepath):
         return {'success': False, 'error': str(e)}
 
 def extract_report_id_from_filename(filename):
-    """Extract report ID from filename like '474_Current_St...'"""
+    """Extract report ID from filename like 'report_474.csv' or '474_Current_St...'"""
     try:
-        return filename.split('_')[0]
+        # Remove 'report_' prefix if exists
+        name = filename.replace('report_', '')
+        # Get first part before underscore or dot
+        report_id = name.split('_')[0].split('.')[0]
+        return report_id
     except:
         return 'unknown'
 
