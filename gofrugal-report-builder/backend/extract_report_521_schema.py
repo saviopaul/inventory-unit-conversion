@@ -43,11 +43,42 @@ async def extract_report_521_schema():
             # ===== STEP 2: NAVIGATE TO REPORT 521 =====
             print("\n📊 Step 2: Navigate to Report 521...")
             
-            # Direct URL to Report 521
-            report_url = 'https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D521%26productId%3D5'
-            await page.goto(report_url, wait_until='networkidle', timeout=60000)
+            # Click Reports
+            await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const reportsLink = links.find(link => link.textContent.trim() === 'Reports');
+                if (reportsLink) reportsLink.click();
+            }''')
+            await asyncio.sleep(1)
+            print("   Clicked Reports")
+            
+            # Click Sales
+            await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const salesLink = links.find(link => link.textContent.trim() === 'Sales');
+                if (salesLink) salesLink.click();
+            }''')
+            await asyncio.sleep(1)
+            print("   Clicked Sales")
+            
+            # Click Item wise
+            await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const itemWiseLink = links.find(link => link.textContent.trim() === 'Item wise');
+                if (itemWiseLink) itemWiseLink.click();
+            }''')
+            await asyncio.sleep(1)
+            print("   Clicked Item wise")
+            
+            # Click Sale - Bill Wise Item Detailed
+            await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const reportLink = links.find(link => link.textContent.includes('Sale - Bill Wise'));
+                if (reportLink) reportLink.click();
+            }''')
             await asyncio.sleep(8)
             
+            report_url = page.url
             await page.screenshot(path=f'{logs_dir}/schema_521_01_report_page.png')
             print("✅ Report 521 page loaded")
             
