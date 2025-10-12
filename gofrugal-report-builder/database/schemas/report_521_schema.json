@@ -2,7 +2,7 @@
   "report_id": "521",
   "report_name": "Sale - Bill Wise Item Detailed",
   "report_url": "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D521%26productId%3D2",
-  "extracted_at": "2025-10-12T14:16:37.424576",
+  "extracted_at": "2025-10-12T14:18:24.842763",
   "extraction_method": "class selectors",
   "column_count": 8,
   "columns": [
