@@ -153,19 +153,55 @@ async def fetch_report_474_puppeteer_style():
                 await page.screenshot(path=f'{logs_dir}/pup_error_iframe_timeout.png')
                 return None
             
-            # Step 8: Apply filters
-            print("\n🔍 Step 8: Apply filters")
+            # Step 8: Fill mandatory fields and apply filters
+            print("\n🔍 Step 8: Fill mandatory fields")
             await asyncio.sleep(2)
             
-            # Click Apply button (from recording: #filtersPanel button.btn-primary)
-            apply_btn = report_frame.locator('#filtersPanel button.btn-primary').first
+            # Select outlet (mandatory field)
+            print("   Selecting outlet...")
+            try:
+                # Look for the outlet dropdown/selector
+                outlet_field = report_frame.locator('input[placeholder*="Choose Outlet"], select[name*="outlet"], #outlet').first
+                if await outlet_field.is_visible(timeout=3000):
+                    await outlet_field.click()
+                    await asyncio.sleep(1)
+                    
+                    # Type "Bandra" to filter options
+                    await outlet_field.fill("Bandra")
+                    await asyncio.sleep(1)
+                    
+                    # Select from dropdown (try multiple methods)
+                    try:
+                        bandra_option = report_frame.locator('text=Bandra Provenance').first
+                        if await bandra_option.is_visible(timeout=2000):
+                            await bandra_option.click()
+                            print("✅ Selected 'Bandra Provenance'")
+                    except:
+                        # Try JavaScript selection
+                        await report_frame.evaluate('''() => {
+                            const options = Array.from(document.querySelectorAll('li, option'));
+                            const bandraOption = options.find(opt => opt.textContent.includes('Bandra'));
+                            if (bandraOption) bandraOption.click();
+                        }''')
+                        print("✅ Selected outlet via JavaScript")
+                    
+                    await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ⚠️ Could not select outlet: {str(e)[:50]}")
+            
+            # Now apply filters
+            print("   Applying filters...")
+            await asyncio.sleep(1)
+            
+            # Click Apply button
+            apply_btn = report_frame.locator('button:has-text("Apply")').first
             if await apply_btn.is_visible(timeout=5000):
                 await apply_btn.click()
-                await asyncio.sleep(3)
+                await asyncio.sleep(5)
                 await page.screenshot(path=f'{logs_dir}/pup_05_after_apply.png')
                 print("✅ Filters applied")
             else:
-                print("⚠️ Apply button not found, continuing...")
+                print("⚠️ Apply button not found")
             
             # Step 9: Export
             print("\n💾 Step 9: Export report")
