@@ -68,17 +68,22 @@ async def fetch_report_474_puppeteer_style():
             await page.screenshot(path=f'{logs_dir}/pup_03_after_login.png')
             print("✅ Logged in")
             
-            # Step 5: Click Reports menu - use JavaScript to ensure it's visible
+            # Step 5: Click Reports menu
             print("\n📊 Step 5: Click Reports menu")
-            # The Reports link is in the menu structure
-            # From recording: div > ul > li:nth-of-type(5) > a with text "Reports"
-            await page.eval_on_selector(
-                'nav.menu-item-navbar li:nth-of-type(5) > a:has-text("Reports")',
-                'el => el.scrollIntoView()'
-            )
-            await asyncio.sleep(1)
-            reports_link = page.locator('nav.menu-item-navbar li:nth-of-type(5) > a').first
-            await reports_link.click()
+            # Simple approach: just find any link with text "Reports"
+            await asyncio.sleep(2)
+            
+            # Use JavaScript to click to avoid hover issues
+            await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const reportsLink = links.find(link => link.textContent.trim() === 'Reports');
+                if (reportsLink) {
+                    reportsLink.click();
+                    return true;
+                }
+                return false;
+            }''')
+            
             await asyncio.sleep(2)
             print("✅ Reports menu clicked")
             
