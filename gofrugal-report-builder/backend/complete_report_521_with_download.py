@@ -227,8 +227,12 @@ async def fetch_report_521_with_download():
             # ===== STEP 5: FIND AND DOWNLOAD THE FILE =====
             print("\n💾 Step 5: Download the generated file")
             
-            # Wait for the offline export iframe to load
-            max_waits = 15
+            # Wait for the iframe with ID dynamicBodyIframe
+            print("   Waiting for dynamicBodyIframe to load...")
+            await asyncio.sleep(5)  # Give Angular app time to initialize
+            
+            # Find the iframe by name or URL pattern
+            max_waits = 20
             offline_frame = None
             
             for attempt in range(max_waits):
@@ -238,39 +242,51 @@ async def fetch_report_521_with_download():
                 if attempt == 0:
                     print(f"   Found {len(frames)} frames on offline export page")
                 
-                # Find the frame with download links
+                # Find the frame with reportId=40000230
                 for i, frame in enumerate(frames):
                     try:
-                        # Look for typical elements in offline export page
-                        # Usually has a table with download links or buttons
-                        download_links = frame.locator('a:has-text("Download"), a:has-text("download")')
-                        link_count = await download_links.count()
-                        
-                        if link_count > 0:
-                            offline_frame = frame
-                            print(f"✅ Offline export iframe loaded (frame {i}) with {link_count} download links")
-                            break
-                        
-                        # Alternative: look for download buttons
-                        download_btns = frame.locator('button:has-text("Download"), i.fa-download')
-                        btn_count = await download_btns.count()
-                        
-                        if btn_count > 0:
-                            offline_frame = frame
-                            print(f"✅ Offline export iframe loaded (frame {i}) with {btn_count} download buttons")
-                            break
-                    except:
-                        pass
+                        frame_url = frame.url
+                        if 'reportId=40000230' in frame_url or 'smartreport' in frame_url:
+                            # Check if the frame has loaded with content
+                            # Look for any table rows or data
+                            rows = frame.locator('tr, tbody tr, table tr')
+                            row_count = await rows.count()
+                            
+                            if row_count > 1:  # More than just header
+                                offline_frame = frame
+                                print(f"✅ Offline export iframe loaded (frame {i}) with {row_count} rows after {attempt+1} attempts")
+                                print(f"   Frame URL: {frame_url[:80]}")
+                                break
+                            elif attempt % 5 == 0:
+                                print(f"   Attempt {attempt+1}: Frame {i} has {row_count} rows, waiting for data...")
+                    except Exception as e:
+                        if attempt == 0:
+                            print(f"   Frame {i} error: {str(e)[:50]}")
                 
                 if offline_frame:
                     break
             
             if not offline_frame:
-                print("⚠️ Could not find offline export iframe with download links")
-                print("   Trying to find download in main page...")
+                print("⚠️ Could not find offline export iframe with data")
+                print("   Trying to find dynamicBodyIframe by ID...")
+                # Try to get frame by navigating to its content
+                await asyncio.sleep(5)
+                frames = page.frames
+                for i, frame in enumerate(frames):
+                    try:
+                        if 'smartreport' in frame.url:
+                            offline_frame = frame
+                            print(f"   Found smartreport frame at index {i}")
+                            break
+                    except:
+                        pass
+            
+            if not offline_frame:
+                print("❌ Still no iframe found, using main frame")
                 offline_frame = page.main_frame
             
             # Take a screenshot to see the page structure
+            await asyncio.sleep(2)
             await page.screenshot(path=f'{logs_dir}/complete_06_looking_for_download.png')
             
             # Try to find and click the most recent download link
