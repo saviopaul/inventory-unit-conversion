@@ -91,15 +91,42 @@ async def test_report_521_load():
                 print("❌ No iframe found")
                 return False
             
-            # ===== STEP 4: WAIT FOR FILTERS AND CLICK APPLY =====
-            print("\n📋 Step 4: Click Apply to load report data...")
+            # ===== STEP 4: SET FILTERS AND CLICK APPLY =====
+            print("\n📋 Step 4: Set filters and click Apply...")
             
             # Wait a bit for filters to be ready
             await asyncio.sleep(5)
-            await page.screenshot(path=f'{logs_dir}/test_load_02_before_apply.png')
+            await page.screenshot(path=f'{logs_dir}/test_load_02_before_filters.png')
+            
+            # Following Puppeteer recording: Click on Standard header to expand
+            print("   Expanding Standard filters...")
+            try:
+                standard_header = report_frame.locator('#filtersPanel div:nth-of-type(2) h4').first
+                await standard_header.click()
+                await asyncio.sleep(1)
+                print("   ✅ Standard filters expanded")
+            except:
+                print("   ⚠️ Could not expand Standard filters")
+            
+            # Select "All Shop Name" (as per Puppeteer recording)
+            print("   Selecting 'All Shop Name'...")
+            try:
+                shop_input = report_frame.locator('#\\31  > div > div > div:nth-of-type(2) input').first
+                await shop_input.click()
+                await asyncio.sleep(1)
+                
+                # Click the first option (All Shop Name)
+                all_shop_option = report_frame.locator('li.select2-results__option--highlighted').first
+                await all_shop_option.click()
+                await asyncio.sleep(1)
+                print("   ✅ Selected 'All Shop Name'")
+            except Exception as e:
+                print(f"   ⚠️ Could not select shop: {str(e)[:50]}")
+            
+            await page.screenshot(path=f'{logs_dir}/test_load_03_filters_set.png')
             
             # Click Apply button (as per Puppeteer recording)
-            print("   Looking for Apply button...")
+            print("   Clicking Apply button...")
             try:
                 apply_btn = report_frame.locator('#filtersPanel button.btn-primary:has-text("Apply")').first
                 await apply_btn.wait_for(state='visible', timeout=10000)
@@ -110,9 +137,9 @@ async def test_report_521_load():
                 
                 # Wait for report to load (as per Puppeteer recording)
                 print("   ⏳ Waiting for report data to load...")
-                await asyncio.sleep(10)
+                await asyncio.sleep(15)
                 
-                await page.screenshot(path=f'{logs_dir}/test_load_03_after_apply.png')
+                await page.screenshot(path=f'{logs_dir}/test_load_04_after_apply.png')
                 
             except Exception as e:
                 print(f"   ❌ Error clicking Apply: {str(e)[:100]}")
