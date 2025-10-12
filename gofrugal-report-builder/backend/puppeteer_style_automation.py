@@ -117,21 +117,40 @@ async def fetch_report_474_puppeteer_style():
                 await page.screenshot(path=f'{logs_dir}/pup_error_no_report_link.png')
                 return None
             
-            # Step 7: Work with iframe
-            print("\n🔧 Step 7: Access report iframe")
-            await asyncio.sleep(3)
+            # Step 7: Wait for iframe to load with actual content
+            print("\n🔧 Step 7: Wait for report iframe to load")
             
-            frames = page.frames
-            print(f"   Found {len(frames)} frames")
-            
-            # Frame 1 should have the report based on Puppeteer recording
+            # Wait longer for the Angular app to load in the iframe
+            max_waits = 15
             report_frame = None
-            if len(frames) > 1:
-                report_frame = frames[1]  # Index 1 from recording
-                print(f"   Using frame 1: {report_frame.url[:80]}")
+            
+            for attempt in range(max_waits):
+                await asyncio.sleep(2)
+                frames = page.frames
+                print(f"   Attempt {attempt+1}: Found {len(frames)} frames")
+                
+                # Look for a frame with actual content (not about:blank)
+                for i, frame in enumerate(frames):
+                    frame_url = frame.url
+                    if 'smartreport' in frame_url or 'reportsclient' in frame_url:
+                        print(f"   Found report frame {i}: {frame_url[:80]}")
+                        
+                        # Check if it has the expected elements
+                        try:
+                            apply_btn = frame.locator('button:has-text("Apply")')
+                            if await apply_btn.count() > 0:
+                                report_frame = frame
+                                print(f"✅ Report iframe loaded with content")
+                                break
+                        except:
+                            pass
+                
+                if report_frame:
+                    break
             
             if not report_frame:
-                print("❌ No iframe found")
+                print("❌ Report iframe never loaded with content")
+                await page.screenshot(path=f'{logs_dir}/pup_error_iframe_timeout.png')
                 return None
             
             # Step 8: Apply filters
