@@ -167,7 +167,7 @@ class GoFrugalReportFetcher:
                 print("✅ Filters applied")
                 
                 # Step 5: Export report
-                print("\n💾 Step 7: Exporting report...")
+                print("\n💾 Step 6: Exporting report...")
                 
                 # Click export icon
                 export_icon = report_frame.locator('#export i').first
