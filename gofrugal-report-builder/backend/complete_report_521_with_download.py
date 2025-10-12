@@ -248,20 +248,20 @@ async def fetch_report_521_with_download():
                         frame_url = frame.url
                         # Must match both smartreport AND reportId=40000230
                         if 'smartreport' in frame_url and 'reportId=40000230' in frame_url:
-                            # Check if the frame has loaded with ZIP file links
-                            zip_links = frame.locator('a[href*=".zip"]')
-                            zip_count = await zip_links.count()
+                            # Check if the frame has loaded with file links in tbody
+                            tbody_links = frame.locator('tbody a')
+                            link_count = await tbody_links.count()
                             
-                            if zip_count > 0:  # Has downloadable files
+                            if link_count > 0 and link_count < 100:  # Has reasonable number of download files
                                 offline_frame = frame
-                                print(f"✅ Offline export iframe loaded (frame {i}) with {zip_count} ZIP files after {attempt+1} attempts")
+                                print(f"✅ Offline export iframe loaded (frame {i}) with {link_count} download links after {attempt+1} attempts")
                                 print(f"   Frame URL: {frame_url[:100]}")
                                 break
                             elif attempt % 5 == 0:
                                 # Check rows for debugging
                                 rows = frame.locator('tbody tr')
                                 row_count = await rows.count()
-                                print(f"   Attempt {attempt+1}: Frame {i} has {row_count} rows, {zip_count} ZIP links, waiting...")
+                                print(f"   Attempt {attempt+1}: Frame {i} has {row_count} rows, {link_count} tbody links, waiting...")
                     except Exception as e:
                         pass
                 
