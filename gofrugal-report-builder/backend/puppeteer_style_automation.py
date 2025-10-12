@@ -87,30 +87,35 @@ async def fetch_report_474_puppeteer_style():
             await asyncio.sleep(2)
             print("✅ Reports menu clicked")
             
-            # Step 6: Navigate menu hierarchy: Inventory -> Current Stock -> Current Stock - Item Wise Detail
+            # Step 6: Navigate to Report 474
             print("\n📦 Step 6: Navigate to Report 474")
-            
-            # The nested menu appears on hover/click
-            # From recording selectors:
-            # Inventory: li:nth-of-type(5) li:nth-of-type(3) > a
-            # Current Stock: same path with li:nth-of-type(2)
-            # Current Stock - Item Wise Detail: adds li:nth-of-type(5)
-            
-            #Instead, let's try clicking by text with retries
             print("   Clicking 'Current Stock - Item Wise Detail'...")
             
-            # Wait a bit for menu to expand
-            await asyncio.sleep(1)
+            # Wait for menu to expand
+            await asyncio.sleep(2)
             
-            # Try to find and click the exact menu item
-            target_link = page.locator('a:has-text("Current Stock - Item Wise Detail")').first
-            await target_link.wait_for(state='attached', timeout=10000)
-            await target_link.scroll_into_view_if_needed()
-            await asyncio.sleep(1)
-            await target_link.click()
-            await asyncio.sleep(5)
-            await page.screenshot(path=f'{logs_dir}/pup_04_report_page.png')
-            print("✅ Report page loaded")
+            # Use JavaScript to find and click the report link
+            result = await page.evaluate('''() => {
+                const links = Array.from(document.querySelectorAll('a'));
+                const reportLink = links.find(link => 
+                    link.textContent.trim().includes('Current Stock - Item Wise Detail')
+                );
+                if (reportLink) {
+                    reportLink.click();
+                    return {success: true, url: reportLink.href};
+                }
+                return {success: false};
+            }''')
+            
+            if result.get('success'):
+                print(f"✅ Clicked report link: {result.get('url', 'unknown')[:80]}")
+                await asyncio.sleep(7)
+                await page.screenshot(path=f'{logs_dir}/pup_04_report_page.png')
+                print("✅ Report page loaded")
+            else:
+                print("❌ Could not find report link")
+                await page.screenshot(path=f'{logs_dir}/pup_error_no_report_link.png')
+                return None
             
             # Step 7: Work with iframe
             print("\n🔧 Step 7: Access report iframe")
