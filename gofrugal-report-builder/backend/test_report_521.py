@@ -149,12 +149,42 @@ async def fetch_report_521():
             print("\n✅ Step 6: Applying filters")
             await asyncio.sleep(2)
             
-            apply_btn = report_frame.locator('button:has-text("Apply")').first
-            if await apply_btn.is_visible(timeout=5000):
-                await apply_btn.click()
+            # Try different selectors for Apply button
+            apply_clicked = False
+            try:
+                apply_btn = report_frame.locator('button:has-text("Apply")').first
+                if await apply_btn.is_visible(timeout=3000):
+                    await apply_btn.click()
+                    apply_clicked = True
+                    print("   Apply button clicked")
+            except:
+                pass
+            
+            # Try alternate selector
+            if not apply_clicked:
+                try:
+                    apply_btn = await report_frame.evaluate('''() => {
+                        const buttons = Array.from(document.querySelectorAll('button'));
+                        const applyBtn = buttons.find(btn => btn.textContent.trim() === 'Apply');
+                        if (applyBtn) {
+                            applyBtn.click();
+                            return true;
+                        }
+                        return false;
+                    }''')
+                    if apply_btn:
+                        apply_clicked = True
+                        print("   Apply button clicked (JavaScript)")
+                except:
+                    pass
+            
+            if apply_clicked:
                 await asyncio.sleep(8)
                 await page.screenshot(path=f'{logs_dir}/r521_03_after_apply.png')
                 print("✅ Filters applied")
+            else:
+                print("⚠️ Apply button not found, continuing...")
+                await page.screenshot(path=f'{logs_dir}/r521_03_no_apply.png')
             
             # Step 6: Try Export
             print("\n💾 Step 7: Attempting export")
