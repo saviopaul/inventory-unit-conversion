@@ -229,7 +229,7 @@ async def fetch_report_521_with_download():
             
             # Wait for the iframe with ID dynamicBodyIframe
             print("   Waiting for dynamicBodyIframe to load...")
-            await asyncio.sleep(5)  # Give Angular app time to initialize
+            await asyncio.sleep(8)  # Give Angular app time to initialize and load data
             
             # Find the iframe by name or URL pattern
             max_waits = 20
@@ -242,48 +242,52 @@ async def fetch_report_521_with_download():
                 if attempt == 0:
                     print(f"   Found {len(frames)} frames on offline export page")
                 
-                # Find the frame with reportId=40000230
+                # Find the frame with reportId=40000230 in smartreport
                 for i, frame in enumerate(frames):
                     try:
                         frame_url = frame.url
-                        if 'reportId=40000230' in frame_url or 'smartreport' in frame_url:
-                            # Check if the frame has loaded with content
-                            # Look for any table rows or data
-                            rows = frame.locator('tr, tbody tr, table tr')
-                            row_count = await rows.count()
+                        # Must match both smartreport AND reportId=40000230
+                        if 'smartreport' in frame_url and 'reportId=40000230' in frame_url:
+                            # Check if the frame has loaded with ZIP file links
+                            zip_links = frame.locator('a[href*=".zip"]')
+                            zip_count = await zip_links.count()
                             
-                            if row_count > 1:  # More than just header
+                            if zip_count > 0:  # Has downloadable files
                                 offline_frame = frame
-                                print(f"✅ Offline export iframe loaded (frame {i}) with {row_count} rows after {attempt+1} attempts")
-                                print(f"   Frame URL: {frame_url[:80]}")
+                                print(f"✅ Offline export iframe loaded (frame {i}) with {zip_count} ZIP files after {attempt+1} attempts")
+                                print(f"   Frame URL: {frame_url[:100]}")
                                 break
                             elif attempt % 5 == 0:
-                                print(f"   Attempt {attempt+1}: Frame {i} has {row_count} rows, waiting for data...")
+                                # Check rows for debugging
+                                rows = frame.locator('tbody tr')
+                                row_count = await rows.count()
+                                print(f"   Attempt {attempt+1}: Frame {i} has {row_count} rows, {zip_count} ZIP links, waiting...")
                     except Exception as e:
-                        if attempt == 0:
-                            print(f"   Frame {i} error: {str(e)[:50]}")
+                        pass
                 
                 if offline_frame:
                     break
             
             if not offline_frame:
-                print("⚠️ Could not find offline export iframe with data")
-                print("   Trying to find dynamicBodyIframe by ID...")
-                # Try to get frame by navigating to its content
-                await asyncio.sleep(5)
+                print("⚠️ Could not find offline export iframe with ZIP files")
+                print("   Trying to find smartreport frame anyway...")
+                # Try to get frame even without ZIP files
+                await asyncio.sleep(3)
                 frames = page.frames
                 for i, frame in enumerate(frames):
                     try:
-                        if 'smartreport' in frame.url:
+                        frame_url = frame.url
+                        if 'smartreport' in frame_url and 'reportId=40000230' in frame_url:
                             offline_frame = frame
-                            print(f"   Found smartreport frame at index {i}")
+                            print(f"   Using smartreport frame at index {i} (no ZIP files detected yet)")
                             break
                     except:
                         pass
             
             if not offline_frame:
-                print("❌ Still no iframe found, using main frame")
-                offline_frame = page.main_frame
+                print("❌ Still no iframe found, cannot proceed")
+                await page.screenshot(path=f'{logs_dir}/complete_error_no_iframe.png')
+                return None
             
             # Take a screenshot to see the page structure
             await asyncio.sleep(2)
