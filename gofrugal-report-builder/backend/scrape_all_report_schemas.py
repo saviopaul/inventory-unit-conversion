@@ -79,7 +79,7 @@ async def scrape_all_report_schemas():
                 const reportLinks = allLinks.filter(link => link.href && link.href.includes('reportId'));
                 
                 return reportLinks.map(link => {
-                    const reportIdMatch = link.href.match(/reportId=(\\d+)/);
+                    const reportIdMatch = link.href.match(/reportId=(\d+)/);
                     return {
                         name: link.textContent.trim(),
                         href: link.href,
