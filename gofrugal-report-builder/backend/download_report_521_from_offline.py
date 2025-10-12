@@ -142,11 +142,38 @@ async def download_report_521_from_offline():
             # Download the file
             print(f"\n⏬ Downloading: {report_521_filename}")
             
-            # Set up download listener BEFORE clicking
-            async with page.expect_download(timeout=30000) as download_info:
-                await report_521_link.click()
+            # Get the onclick attribute to extract the download URL
+            onclick_attr = await report_521_link.get_attribute('onclick')
+            print(f"   Link onclick: {onclick_attr[:100] if onclick_attr else 'None'}")
             
-            download = await download_info.value
+            # Extract the download URL from onclick
+            if onclick_attr and 'window.open' in onclick_attr:
+                # Parse: window.open('/smartreport/download?...','_blank')
+                import re
+                match = re.search(r"window\.open\('([^']+)'", onclick_attr)
+                if match:
+                    download_path = match.group(1)
+                    print(f"   Extracted download path: {download_path}")
+                    
+                    # Construct full URL
+                    base_url = 'https://bbcohq.gofrugal.com'
+                    download_url = base_url + download_path
+                    print(f"   Full download URL: {download_url}")
+                    
+                    # Set up download listener and navigate to the URL
+                    async with page.expect_download(timeout=30000) as download_info:
+                        await page.goto(download_url)
+                    
+                    download = await download_info.value
+                else:
+                    print("   ❌ Could not parse download URL from onclick")
+                    return None
+            else:
+                # Fallback: try clicking normally
+                print("   Using fallback click method...")
+                async with page.expect_download(timeout=30000) as download_info:
+                    await report_521_link.click()
+                download = await download_info.value
             
             # Save the file
             timestamp = time.strftime("%Y%m%d_%H%M%S")
