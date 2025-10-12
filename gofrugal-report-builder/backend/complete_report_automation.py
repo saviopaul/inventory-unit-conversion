@@ -96,29 +96,63 @@ class GoFrugalReportFetcher:
                 await page.screenshot(path=f'{self.logs_dir}/auto_03_report_page.png')
                 print("✅ Report 474 page loaded")
                 
-                # Step 3: Work with iframe (report loads in iframe)
-                print("\n🔧 Step 5: Accessing report iframe...")
-                await asyncio.sleep(2)
+                # Step 3: Wait for report to load in iframe
+                print("\n🔧 Step 4: Waiting for report iframe to load...")
+                await asyncio.sleep(5)
+                await page.screenshot(path=f'{self.logs_dir}/auto_03b_waiting_iframe.png')
                 
                 # Get all frames
                 frames = page.frames
                 print(f"   Found {len(frames)} frames")
                 
-                # Find the report frame (usually index 1)
+                # Find the report frame by checking for report-specific elements
                 report_frame = None
                 for i, frame in enumerate(frames):
                     try:
-                        # Check if this frame has the Apply button
-                        apply_btn = frame.locator('button:has-text("Apply")').first
-                        if await apply_btn.is_visible(timeout=1000):
+                        frame_url = frame.url
+                        print(f"   Frame {i}: {frame_url[:80]}...")
+                        
+                        # Check if this frame has the report content
+                        # Look for multiple indicators
+                        has_apply = False
+                        has_export = False
+                        has_filters = False
+                        
+                        try:
+                            apply_btn = frame.locator('button:has-text("Apply")')
+                            if await apply_btn.count() > 0:
+                                has_apply = True
+                        except:
+                            pass
+                        
+                        try:
+                            export_elem = frame.locator('#export')
+                            if await export_elem.count() > 0:
+                                has_export = True
+                        except:
+                            pass
+                        
+                        try:
+                            filters_elem = frame.locator('#filtersPanel')
+                            if await filters_elem.count() > 0:
+                                has_filters = True
+                        except:
+                            pass
+                        
+                        print(f"      Apply: {has_apply}, Export: {has_export}, Filters: {has_filters}")
+                        
+                        if has_apply or has_export or has_filters:
                             report_frame = frame
                             print(f"✅ Found report frame at index {i}")
                             break
-                    except:
+                    except Exception as e:
+                        print(f"      Error checking frame {i}: {str(e)[:50]}")
                         continue
                 
                 if not report_frame:
-                    print("❌ Could not find report frame")
+                    print("❌ Could not find report frame, trying alternative navigation...")
+                    # Take screenshot for debugging
+                    await page.screenshot(path=f'{self.logs_dir}/auto_04_no_frame_found.png')
                     return None
                 
                 # Step 4: Apply filters
