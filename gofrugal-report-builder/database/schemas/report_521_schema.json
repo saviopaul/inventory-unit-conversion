@@ -1,0 +1,18 @@
+{
+  "report_id": "521",
+  "report_name": "Sale - Bill Wise Item Detailed",
+  "report_url": "https://bbcohq.gofrugal.com/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D521%26productId%3D2",
+  "extracted_at": "2025-10-12T14:16:37.424576",
+  "extraction_method": "class selectors",
+  "column_count": 8,
+  "columns": [
+    "Main Filters",
+    "Select column",
+    "×\n                Alert",
+    "×",
+    "521 : Sales - Bill Wise Item Detailed\n                \n                 \n                       \n        \n        \n        \n        \n            \n        \n                  \n        \n        \n          \n              \n          \n        \n        \n        \n         \n\n    \n    \n    \n    \n      \n          \n        \n          \n              \n          \n       \n                    \n                        \n                          \n                   \n        \n        \n          \n          \n          \n      \n      \n        \n          \n            \n          \n          \n        \n      \n      \n\n        \n       \n      \n    \n      \n    \n\n\n    \n\n      \n      \n      \n      × \n    \n  \n  \n  \n    \n\n      \n        \n          \n        \n          \n          \n             \n            \n           \n        \n           \n            OK\n          \n          \n        \n            \n    \n  \n   \n\n  \n    \n    \n      \n        ×\n        Report Description\n      \n      \n        Report Id: 521\n        Report Name: Sales - Bill Wise Item Detailed\n        Description: \n          \n        Amt With Tax = Item Quantity * Item Rate\n        Total Amt = Amount after applying discount and (inclusive or exclusive) of taxes and all the charges which are to be collected from the customer.\n        The delivery charge and round off value are not considered in this report.",
+    "×\n        Report Description",
+    "×",
+    "×\n                                                Status: Completed"
+  ]
+}
