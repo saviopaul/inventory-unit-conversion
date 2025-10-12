@@ -64,16 +64,29 @@ async def scrape_all_report_schemas():
             # Get all report links from the navigation
             # Reports are typically in format: <a href="mainIndex.do?page=...reportId=XXX...">Report Name</a>
             report_links = await page.evaluate('''() => {
-                const allLinks = Array.from(document.querySelectorAll('a[href*="reportId"]'));
-                return allLinks.map(link => ({
-                    name: link.textContent.trim(),
-                    href: link.getAttribute('href'),
-                    reportId: new URLSearchParams(link.href.split('?')[1] || '').get('reportId') || 
-                             link.href.match(/reportId=(\\d+)/)?.[1] || null
-                })).filter(item => item.reportId && item.name);
+                const allLinks = Array.from(document.querySelectorAll('a'));
+                const reportLinks = allLinks.filter(link => link.href && link.href.includes('reportId'));
+                
+                return reportLinks.map(link => {
+                    const reportIdMatch = link.href.match(/reportId=(\\d+)/);
+                    return {
+                        name: link.textContent.trim(),
+                        href: link.href,
+                        reportId: reportIdMatch ? reportIdMatch[1] : null
+                    };
+                }).filter(item => item.reportId && item.name && item.name.length > 0);
             }''')
             
             print(f"✅ Found {len(report_links)} reports")
+            
+            # Remove duplicates by reportId
+            unique_reports = {}
+            for report in report_links:
+                if report['reportId'] not in unique_reports:
+                    unique_reports[report['reportId']] = report
+            
+            report_links = list(unique_reports.values())
+            print(f"✅ {len(report_links)} unique reports after deduplication")
             
             # Save report list
             with open(f'{output_dir}/report_list.json', 'w') as f:
