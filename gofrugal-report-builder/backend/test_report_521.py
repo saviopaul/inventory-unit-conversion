@@ -189,44 +189,89 @@ async def fetch_report_521():
             # Step 6: Try Export
             print("\n💾 Step 7: Attempting export")
             await asyncio.sleep(3)
+            await page.screenshot(path=f'{logs_dir}/r521_04_before_export.png')
             
-            # Set up download listener BEFORE clicking export
-            download_promise = page.wait_for_event('download', timeout=20000)
+            # List all available buttons first
+            try:
+                all_buttons = await report_frame.evaluate('''() => {
+                    return Array.from(document.querySelectorAll('button, a, [role="button"]')).map(btn => ({
+                        text: btn.textContent.trim(),
+                        id: btn.id,
+                        class: btn.className
+                    }));
+                }''')
+                print(f"   Available buttons/links: {len(all_buttons)}")
+                for btn in all_buttons:
+                    if any(word in btn['text'].lower() for word in ['export', 'download', 'csv', 'excel']):
+                        print(f"     - {btn['text'][:40]} (id: {btn['id']}, class: {btn['class'][:30]})")
+            except:
+                pass
             
             # Try clicking export button
             export_clicked = False
             
             # Method 1: Export as CSV button
             try:
-                export_btn = report_frame.locator('button:has-text("Export as CSV")').first
+                export_btn = report_frame.locator('button:has-text("Export as CSV"), button:has-text("Export")').first
                 if await export_btn.is_visible(timeout=3000):
-                    print("   Clicking 'Export as CSV' button...")
+                    print("   Method 1: Clicking export button...")
+                    # Set up download listener
+                    download_promise = page.wait_for_event('download', timeout=20000)
                     await export_btn.click()
                     export_clicked = True
-            except:
-                pass
+                    
+                    # Try to get download
+                    try:
+                        download = await download_promise
+                        timestamp = time.strftime("%Y%m%d_%H%M%S")
+                        suggested = download.suggested_filename
+                        ext = suggested.split('.')[-1] if '.' in suggested else 'xls'
+                        filename = f"report_521_{timestamp}.{ext}"
+                        filepath = os.path.join(download_dir, filename)
+                        await download.save_as(filepath)
+                        print(f"✅ Downloaded: {filepath}")
+                        if os.path.exists(filepath):
+                            print(f"✅ File verified: {os.path.getsize(filepath)} bytes")
+                            return filepath
+                    except asyncio.TimeoutError:
+                        print("   Method 1: No immediate download, checking for dialog...")
+            except Exception as e:
+                print(f"   Method 1 failed: {str(e)[:50]}")
             
-            # Method 2: Look for #export element
+            # Method 2: Look for export icon/link
             if not export_clicked:
                 try:
-                    export_icon = report_frame.locator('#export').first
-                    if await export_icon.is_visible(timeout=3000):
-                        print("   Clicking export icon...")
-                        await export_icon.click()
+                    export_elem = report_frame.locator('#export, [id*="export"], [class*="export"]').first
+                    if await export_elem.is_visible(timeout=3000):
+                        print("   Method 2: Clicking export element...")
+                        await export_elem.click()
                         await asyncio.sleep(2)
+                        await page.screenshot(path=f'{logs_dir}/r521_05_after_export_click.png')
                         
-                        # Now click download button
-                        download_btn = report_frame.locator('button').filter(has_text="Download").first
-                        if await download_btn.is_visible(timeout=3000):
-                            await download_btn.click()
-                            export_clicked = True
-                except:
-                    pass
+                        # Look for download/confirm button
+                        confirm_buttons = await report_frame.locator('button').all()
+                        for btn in confirm_buttons:
+                            btn_text = await btn.text_content()
+                            if any(word in btn_text.lower() for word in ['download', 'ok', 'confirm', 'export']):
+                                print(f"   Found confirm button: {btn_text[:30]}")
+                                download_promise = page.wait_for_event('download', timeout=15000)
+                                await btn.click()
+                                try:
+                                    download = await download_promise
+                                    timestamp = time.strftime("%Y%m%d_%H%M%S")
+                                    filename = f"report_521_{timestamp}.xls"
+                                    filepath = os.path.join(download_dir, filename)
+                                    await download.save_as(filepath)
+                                    print(f"✅ Downloaded: {filepath}")
+                                    return filepath
+                                except:
+                                    pass
+                except Exception as e:
+                    print(f"   Method 2 failed: {str(e)[:50]}")
             
-            if not export_clicked:
-                print("❌ Could not trigger export")
-                await page.screenshot(path=f'{logs_dir}/r521_error_no_export.png')
-                return None
+            print("❌ Could not trigger export/download")
+            await page.screenshot(path=f'{logs_dir}/r521_error_no_export.png')
+            return None
             
             # Wait for download
             print("⏳ Waiting for download...")
