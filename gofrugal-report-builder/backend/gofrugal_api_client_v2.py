@@ -80,6 +80,10 @@ class GoFrugalAPIClient:
                 await page.goto(f'{self.base_url}/RayMedi_HQ/index.do#/dashboard', wait_until='networkidle')
                 await asyncio.sleep(2)
                 
+                logger.info("Step 4b: Navigating to Report 474 page...")
+                await page.goto(f'{self.base_url}/RayMedi_HQ/index.do#/smartreport?reportId=474&productId=2&HQ_DEFA_ROLE_ID=2', wait_until='networkidle')
+                await asyncio.sleep(3)
+                
                 logger.info("Step 5: Extracting all cookies...")
                 cookies = await context.cookies()
                 
