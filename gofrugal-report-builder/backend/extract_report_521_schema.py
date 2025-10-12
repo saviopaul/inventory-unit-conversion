@@ -102,22 +102,55 @@ async def extract_report_521_schema():
                 await page.screenshot(path=f'{logs_dir}/schema_521_error_no_iframe.png')
                 return None
             
-            # Wait for report content to load
-            print("   Waiting for report content to load...")
-            await asyncio.sleep(10)
+            # Wait for report content to load and click Apply to load data
+            print("   Waiting for report filters to load...")
+            await asyncio.sleep(5)
+            
+            # Click Apply button to load report data
+            print("   Clicking Apply to load report data...")
+            try:
+                apply_btn = report_frame.locator('#filtersPanel button.btn-primary:has-text("Apply")').first
+                await apply_btn.wait_for(state='visible', timeout=10000)
+                await apply_btn.click()
+                print("   ✅ Apply clicked")
+                await asyncio.sleep(10)  # Wait for data to load
+            except Exception as e:
+                print(f"   ⚠️ Could not click Apply: {str(e)[:50]}")
+                print("   Continuing anyway...")
+                await asyncio.sleep(5)
             
             # ===== STEP 4: EXTRACT COLUMN HEADERS =====
             print("\n📋 Step 4: Extract column headers...")
             
-            # Take screenshot of the report
+            # Take screenshot of the report with data
             await page.screenshot(path=f'{logs_dir}/schema_521_02_with_data.png')
             
-            # Method 1: Extract from table headers
+            # Method 1: Extract from table headers in the data table
+            # Look for tables with actual data (not the filter/settings tables)
             columns_th = await report_frame.evaluate('''() => {
-                const headers = Array.from(document.querySelectorAll('th'));
-                return headers.map(h => h.textContent.trim()).filter(t => t && t.length > 0);
+                // Find the main data table (usually has many rows)
+                const tables = Array.from(document.querySelectorAll('table'));
+                let mainTable = null;
+                let maxRows = 0;
+                
+                for (const table of tables) {
+                    const rows = table.querySelectorAll('tbody tr');
+                    if (rows.length > maxRows) {
+                        maxRows = rows.length;
+                        mainTable = table;
+                    }
+                }
+                
+                if (mainTable) {
+                    const headers = Array.from(mainTable.querySelectorAll('thead th, thead td'));
+                    return headers.map(h => h.textContent.trim()).filter(t => t && t.length > 0 && t !== 'S no');
+                }
+                
+                // Fallback: get all th elements
+                const allHeaders = Array.from(document.querySelectorAll('th'));
+                return allHeaders.map(h => h.textContent.trim()).filter(t => t && t.length > 0 && t !== 'S no');
             }''')
-            print(f"   Method 1 (th): Found {len(columns_th)} columns")
+            print(f"   Method 1 (main table th): Found {len(columns_th)} columns")
             if len(columns_th) > 0:
                 print(f"   Sample: {columns_th[:5]}")
             
