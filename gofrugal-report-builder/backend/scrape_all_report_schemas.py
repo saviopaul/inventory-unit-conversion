@@ -204,7 +204,10 @@ async def scrape_all_report_schemas():
             print(f"   Total reports found: {len(report_links)}")
             print(f"   Successfully extracted: {successful_extractions}")
             print(f"   Failed extractions: {failed_extractions}")
-            print(f"   Success rate: {(successful_extractions/len(report_links)*100):.1f}%")
+            if len(report_links) > 0:
+                print(f"   Success rate: {(successful_extractions/len(report_links)*100):.1f}%")
+            else:
+                print(f"   Success rate: N/A (no reports found)")
             
             return master_schema
             
