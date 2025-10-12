@@ -86,41 +86,13 @@ class GoFrugalReportFetcher:
                 await page.screenshot(path=f'{self.logs_dir}/auto_02_after_login.png')
                 print("✅ Logged in successfully")
                 
-                # Step 2: Navigate to Reports
-                print("\n📊 Step 3: Navigating to Reports menu...")
-                # Wait for menu bar to be fully loaded
-                await asyncio.sleep(2)
-                
-                # Find Reports menu using class selector (from Puppeteer recording)
-                # The menu structure uses dropdown-submenu class
-                reports_menu = page.locator('li.dropdown-submenu a.ng-binding:has-text("Reports")').first
-                await reports_menu.wait_for(state='visible', timeout=15000)
-                await reports_menu.hover()
-                await asyncio.sleep(1)
-                await reports_menu.click()
-                await asyncio.sleep(2)
-                print("✅ Reports menu clicked")
-                
-                # Navigate to Inventory -> Current Stock -> Current Stock - Item Wise Detail
-                print("\n📦 Step 4: Navigating to Report 474...")
-                
-                # Click Inventory
-                inventory_menu = page.locator('a:has-text("Inventory")').first
-                await inventory_menu.wait_for(state='visible', timeout=5000)
-                await inventory_menu.click()
-                await asyncio.sleep(1)
-                
-                # Click Current Stock
-                current_stock_menu = page.locator('a:has-text("Current Stock")').first
-                await current_stock_menu.wait_for(state='visible', timeout=5000)
-                await current_stock_menu.click()
-                await asyncio.sleep(1)
-                
-                # Click Current Stock - Item Wise Detail (Report 474)
-                report_474_link = page.locator('a:has-text("Current Stock - Item Wise Detail")').first
-                await report_474_link.wait_for(state='visible', timeout=5000)
-                await report_474_link.click()
-                await asyncio.sleep(3)
+                # Step 2: Navigate directly to Report 474
+                print("\n📦 Step 3: Navigating directly to Report 474...")
+                # Based on the URL pattern, directly navigate to report 474
+                # Pattern: mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D474%26productId%3D5
+                report_url = f'{self.base_url}/RayMedi_HQ/mainIndex.do?page=%2Fsmartreport%2Findex.html%23%2Freports%3FreportId%3D474%26productId%3D5'
+                await page.goto(report_url, wait_until='networkidle', timeout=60000)
+                await asyncio.sleep(5)
                 await page.screenshot(path=f'{self.logs_dir}/auto_03_report_page.png')
                 print("✅ Report 474 page loaded")
                 
