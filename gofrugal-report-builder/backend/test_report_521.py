@@ -210,17 +210,24 @@ async def fetch_report_521():
             # Try clicking export button
             export_clicked = False
             
-            # Method 1: Export as CSV button
+            # Method 1: Look for export icon (upward arrow in box - in top-right of data table)
             try:
-                export_btn = report_frame.locator('button:has-text("Export as CSV"), button:has-text("Export")').first
-                if await export_btn.is_visible(timeout=3000):
-                    print("   Method 1: Clicking export button...")
-                    # Set up download listener
+                print("   Method 1: Looking for export icon in data table header...")
+                # Try common selectors for export icons
+                export_icon = report_frame.locator(
+                    'mat-icon:has-text("arrow_upward"), '
+                    'i.fa-upload, i.fa-arrow-up, '
+                    'i.material-icons:has-text("upload"), '
+                    'button[mattooltip*="Export"], button[title*="Export"], '
+                    '[aria-label*="Export"], [aria-label*="export"]'
+                ).first
+                
+                if await export_icon.is_visible(timeout=3000):
+                    print("   Found export icon, clicking...")
                     download_promise = page.wait_for_event('download', timeout=20000)
-                    await export_btn.click()
+                    await export_icon.click()
                     export_clicked = True
                     
-                    # Try to get download
                     try:
                         download = await download_promise
                         timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -235,6 +242,8 @@ async def fetch_report_521():
                             return filepath
                     except asyncio.TimeoutError:
                         print("   Method 1: No immediate download, checking for dialog...")
+                        await asyncio.sleep(2)
+                        await page.screenshot(path=f'{logs_dir}/r521_05_after_icon_click.png')
             except Exception as e:
                 print(f"   Method 1 failed: {str(e)[:50]}")
             
