@@ -290,53 +290,47 @@ async def fetch_report_521_with_download():
             await page.screenshot(path=f'{logs_dir}/complete_06_looking_for_download.png')
             
             # Try to find and click the most recent download link
-            print("   Looking for the most recent export file...")
+            print("   Looking for Report 521 export files...")
             
             try:
-                # Method 1: Look for download links
-                download_links = offline_frame.locator('a[href*="download"], a[href*="export"]')
+                # Look for links in table cells (td a or tbody a)
+                download_links = offline_frame.locator('tbody a, td a')
                 link_count = await download_links.count()
-                print(f"   Found {link_count} potential download links")
+                print(f"   Found {link_count} download links in table")
                 
                 if link_count > 0:
-                    # Click the first (most recent) download link
-                    download_promise = page.wait_for_event('download', timeout=30000)
-                    await download_links.first.click()
-                    print("   Clicked download link, waiting for file...")
+                    # Get all link texts to find Report 521
+                    report_521_link = None
+                    report_521_index = -1
                     
-                    download = await download_promise
+                    print("   Scanning for Report 521 files...")
+                    for i in range(link_count):
+                        try:
+                            link = download_links.nth(i)
+                            link_text = await link.inner_text()
+                            
+                            # Look for files starting with "521"
+                            if link_text.startswith('521'):
+                                report_521_link = link
+                                report_521_index = i
+                                print(f"   ✅ Found Report 521: {link_text}")
+                                # Take the first (most recent) match
+                                break
+                        except:
+                            pass
                     
-                    # Save the file
-                    timestamp = time.strftime("%Y%m%d_%H%M%S")
-                    suggested = download.suggested_filename
-                    extension = suggested.split('.')[-1] if '.' in suggested else 'csv'
-                    filename = f"report_521_{timestamp}.{extension}"
-                    filepath = os.path.join(download_dir, filename)
-                    
-                    await download.save_as(filepath)
-                    print(f"✅ Downloaded: {filepath}")
-                    
-                    if os.path.exists(filepath):
-                        file_size = os.path.getsize(filepath)
-                        print(f"✅ File verified: {file_size} bytes")
-                        return filepath
-                else:
-                    # Method 2: Look for download buttons or icons
-                    print("   No links found, trying download buttons...")
-                    download_btns = offline_frame.locator('button:has-text("Download"), i.fa-download')
-                    btn_count = await download_btns.count()
-                    print(f"   Found {btn_count} download buttons")
-                    
-                    if btn_count > 0:
+                    if report_521_link:
+                        # Click the Report 521 download link
                         download_promise = page.wait_for_event('download', timeout=30000)
-                        await download_btns.first.click()
-                        print("   Clicked download button, waiting for file...")
+                        await report_521_link.click()
+                        print("   Clicked Report 521 link, waiting for download...")
                         
                         download = await download_promise
                         
+                        # Save the file
                         timestamp = time.strftime("%Y%m%d_%H%M%S")
                         suggested = download.suggested_filename
-                        extension = suggested.split('.')[-1] if '.' in suggested else 'csv'
+                        extension = suggested.split('.')[-1] if '.' in suggested else 'zip'
                         filename = f"report_521_{timestamp}.{extension}"
                         filepath = os.path.join(download_dir, filename)
                         
@@ -347,19 +341,35 @@ async def fetch_report_521_with_download():
                             file_size = os.path.getsize(filepath)
                             print(f"✅ File verified: {file_size} bytes")
                             return filepath
+                        else:
+                            print("❌ File not found after download")
+                            return None
                     else:
-                        print("❌ No download buttons found either")
+                        print("⚠️ No Report 521 file found in the list")
+                        print("   Available files:")
+                        for i in range(min(link_count, 10)):
+                            try:
+                                link_text = await download_links.nth(i).inner_text()
+                                print(f"     - {link_text}")
+                            except:
+                                pass
                         
-                        # Method 3: Dump HTML to analyze structure
-                        print("   Dumping HTML for analysis...")
-                        html_content = await offline_frame.content()
-                        with open(f'{logs_dir}/complete_offline_export_html.html', 'w', encoding='utf-8') as f:
-                            f.write(html_content)
-                        print(f"   HTML saved to: {logs_dir}/complete_offline_export_html.html")
-                        
-                        # Take detailed screenshot
-                        await page.screenshot(path=f'{logs_dir}/complete_07_no_download_found.png', full_page=True)
-                        return None
+                        # Maybe the export is still processing - take screenshot
+                        await page.screenshot(path=f'{logs_dir}/complete_07_no_521_found.png')
+                        return "NO_REPORT_521_YET"
+                else:
+                    print("❌ No download links found in table")
+                    
+                    # Dump HTML to analyze structure
+                    print("   Dumping HTML for analysis...")
+                    html_content = await offline_frame.content()
+                    with open(f'{logs_dir}/complete_offline_export_html.html', 'w', encoding='utf-8') as f:
+                        f.write(html_content)
+                    print(f"   HTML saved to: {logs_dir}/complete_offline_export_html.html")
+                    
+                    # Take detailed screenshot
+                    await page.screenshot(path=f'{logs_dir}/complete_07_no_download_found.png', full_page=True)
+                    return None
                         
             except asyncio.TimeoutError:
                 print("❌ Download timeout")
