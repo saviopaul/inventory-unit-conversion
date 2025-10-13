@@ -1,190 +1,232 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import './ReportBuilder.css';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-function ReportBuilder() {
-  const [schemas, setSchemas] = useState([]);
+function ReportBuilder({ reports, selectedReportId, apiUrl }) {
+  const [availableReports, setAvailableReports] = useState(reports);
   const [selectedColumns, setSelectedColumns] = useState([]);
-  const [allColumns, setAllColumns] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activeReportId, setActiveReportId] = useState(selectedReportId || null);
+  const [reportColumns, setReportColumns] = useState({});
+  const [previewData, setPreviewData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    loadAllSchemas();
-  }, []);
+    if (activeReportId && !reportColumns[activeReportId]) {
+      fetchReportColumns(activeReportId);
+    }
+  }, [activeReportId]);
 
-  const loadAllSchemas = async () => {
+  const fetchReportColumns = async (reportId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/schemas`);
-      const schemasList = response.data.schemas || [];
-      setSchemas(schemasList);
-
-      // Load all columns from all schemas
-      const columnsMap = new Map();
-      
-      for (const schema of schemasList) {
-        const detailResponse = await axios.get(`${API_URL}/api/schemas/${schema.report_id}`);
-        const schemaData = detailResponse.data.schema;
-        
-        schemaData.columns.forEach(column => {
-          if (!columnsMap.has(column)) {
-            columnsMap.set(column, {
-              name: column,
-              source: `Report ${schema.report_id}`,
-              reportId: schema.report_id
-            });
-          }
-        });
-      }
-
-      setAllColumns(Array.from(columnsMap.values()));
+      const response = await fetch(`${apiUrl}/api/reports/${reportId}`);
+      const data = await response.json();
+      setReportColumns(prev => ({
+        ...prev,
+        [reportId]: data.columns
+      }));
     } catch (error) {
-      console.error('Error loading schemas:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching columns:', error);
     }
   };
 
-  const toggleColumn = (column) => {
-    setSelectedColumns(prev => {
-      const exists = prev.find(c => c.name === column.name);
-      if (exists) {
-        return prev.filter(c => c.name !== column.name);
-      } else {
-        return [...prev, column];
-      }
-    });
-  };
-
-  const exportReport = () => {
-    const reportData = {
-      columns: selectedColumns.map(c => c.name),
-      sources: selectedColumns.map(c => ({ column: c.name, source: c.source })),
-      createdAt: new Date().toISOString()
+  const handleColumnSelect = (reportId, column, columnIndex) => {
+    const newColumn = {
+      report_id: reportId,
+      column_name: column.column_name,
+      qualified_name: column.qualified_name,
+      display_name: column.display_name,
+      column_index: columnIndex
     };
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `custom_report_${Date.now()}.json`;
-    a.click();
+    // Check if already selected
+    const exists = selectedColumns.find(
+      c => c.report_id === reportId && c.column_index === columnIndex
+    );
+
+    if (exists) {
+      // Remove
+      setSelectedColumns(selectedColumns.filter(
+        c => !(c.report_id === reportId && c.column_index === columnIndex)
+      ));
+    } else {
+      // Add
+      setSelectedColumns([...selectedColumns, newColumn]);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="card">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading report builder...</p>
-        </div>
-      </div>
+  const isColumnSelected = (reportId, columnIndex) => {
+    return selectedColumns.some(
+      c => c.report_id === reportId && c.column_index === columnIndex
     );
-  }
+  };
+
+  const handleGeneratePreview = async () => {
+    if (selectedColumns.length === 0) {
+      alert('Please select at least one column');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiUrl}/api/reports/custom/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selected_columns: selectedColumns,
+          filters: null,
+          join_keys: null
+        })
+      });
+      const data = await response.json();
+      setPreviewData(data);
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      alert('Error generating preview');
+    }
+    setLoading(false);
+  };
+
+  const filteredColumns = activeReportId && reportColumns[activeReportId]
+    ? reportColumns[activeReportId].filter(col =>
+        col.column_name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   return (
-    <div className="space-y-6">
-      <div className="card">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Custom Report Builder</h2>
-        <p className="text-gray-600 mb-6">
-          Select columns from all available reports to create your custom report. No vendor fees required!
-        </p>
+    <div className="report-builder">
+      <div className="builder-header">
+        <h2>🔨 Custom Report Builder</h2>
+        <p>Select columns from any report to build your custom report</p>
+      </div>
 
-        {schemas.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No schemas available. Please extract schemas from the Dashboard first.</p>
+      <div className="builder-layout">
+        {/* Left Panel - Column Selection */}
+        <div className="column-selector">
+          <div className="selector-header">
+            <h3>Available Columns</h3>
+            <select
+              className="report-dropdown"
+              value={activeReportId || ''}
+              onChange={(e) => setActiveReportId(e.target.value)}
+            >
+              <option value="">Select a report...</option>
+              {availableReports.map(report => (
+                <option key={report.report_id} value={report.report_id}>
+                  #{report.report_id} - {report.report_name.substring(0, 50)}
+                </option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Available Columns */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Available Columns ({allColumns.length})</h3>
-              <div className="border rounded-lg p-4 h-96 overflow-y-auto bg-gray-50">
-                {allColumns.map((column, index) => (
+
+          {activeReportId && (
+            <>
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="Search columns..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+
+              <div className="columns-container">
+                {filteredColumns.map((col, idx) => (
                   <div
-                    key={index}
-                    className="flex items-center justify-between p-2 hover:bg-white rounded cursor-pointer mb-2"
-                    onClick={() => toggleColumn(column)}
+                    key={idx}
+                    className={`column-option ${
+                      isColumnSelected(activeReportId, col.index) ? 'selected' : ''
+                    }`}
+                    onClick={() => handleColumnSelect(activeReportId, col, col.index)}
                   >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{column.name}</p>
-                      <p className="text-xs text-gray-500">{column.source}</p>
+                    <div className="column-checkbox">
+                      {isColumnSelected(activeReportId, col.index) && '✓'}
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={selectedColumns.some(c => c.name === column.name)}
-                      onChange={() => {}}  
-                      className="h-4 w-4 text-blue-600"
-                    />
+                    <div className="column-info">
+                      <div className="column-name-text">{col.column_name}</div>
+                      <div className="column-source">Report {activeReportId}</div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </>
+          )}
+        </div>
 
-            {/* Selected Columns */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">
-                Selected Columns ({selectedColumns.length})
-              </h3>
-              <div className="border rounded-lg p-4 h-96 overflow-y-auto bg-blue-50">
-                {selectedColumns.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No columns selected yet</p>
-                ) : (
-                  selectedColumns.map((column, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 bg-white rounded mb-2"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{column.name}</p>
-                        <p className="text-xs text-gray-500">{column.source}</p>
-                      </div>
-                      <button
-                        onClick={() => toggleColumn(column)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))
-                )}
+        {/* Right Panel - Selected Columns & Preview */}
+        <div className="preview-panel">
+          <div className="selected-columns-section">
+            <h3>Selected Columns ({selectedColumns.length})</h3>
+            {selectedColumns.length === 0 ? (
+              <div className="empty-state">
+                <p>No columns selected yet</p>
+                <p className="empty-hint">Select columns from the left panel</p>
               </div>
+            ) : (
+              <div className="selected-list">
+                {selectedColumns.map((col, idx) => (
+                  <div key={idx} className="selected-item">
+                    <span className="item-index">{idx + 1}</span>
+                    <div className="item-info">
+                      <span className="item-name">{col.column_name}</span>
+                      <span className="item-source">Report {col.report_id}</span>
+                    </div>
+                    <button
+                      className="remove-btn"
+                      onClick={() => handleColumnSelect(col.report_id, col, col.column_index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="action-buttons">
+              <button
+                className="btn-primary"
+                onClick={handleGeneratePreview}
+                disabled={selectedColumns.length === 0 || loading}
+              >
+                {loading ? 'Generating...' : '👁️ Generate Preview'}
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => setSelectedColumns([])}
+                disabled={selectedColumns.length === 0}
+              >
+                Clear All
+              </button>
             </div>
           </div>
-        )}
 
-        {selectedColumns.length > 0 && (
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              onClick={() => setSelectedColumns([])}
-              className="btn-secondary"
-            >
-              Clear All
-            </button>
-            <button
-              onClick={exportReport}
-              className="btn-primary"
-              data-testid="btn-export-report"
-            >
-              Export Report Configuration
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="card text-center">
-          <p className="text-gray-600 text-sm">Total Reports</p>
-          <p className="text-3xl font-bold text-blue-600">{schemas.length}</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-gray-600 text-sm">Available Columns</p>
-          <p className="text-3xl font-bold text-green-600">{allColumns.length}</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-gray-600 text-sm">Selected Columns</p>
-          <p className="text-3xl font-bold text-purple-600">{selectedColumns.length}</p>
+          {/* Preview Data */}
+          {previewData && (
+            <div className="preview-section">
+              <h3>📊 Preview ({previewData.preview_rows} of {previewData.row_count} rows)</h3>
+              <div className="preview-table-container">
+                <table className="preview-table">
+                  <thead>
+                    <tr>
+                      {previewData.columns.map((col, idx) => (
+                        <th key={idx}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.data.slice(0, 10).map((row, rowIdx) => (
+                      <tr key={rowIdx}>
+                        {row.map((cell, cellIdx) => (
+                          <td key={cellIdx}>{String(cell).substring(0, 50)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button className="btn-export">💾 Export to CSV</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
