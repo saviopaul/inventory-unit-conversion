@@ -11,7 +11,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const API_URL = 'http://localhost:8002';
+  const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
   useEffect(() => {
     fetchReports();
